@@ -1,5 +1,15 @@
-import { Elysia, t } from 'elysia'
-import { AuthModel } from './auth.model'
-import { AuthService } from './auth.service'
+import { z } from "zod";
+import type { AuthService } from "./auth.service";
 
-export const authController = new Elysia({ prefix: '/auth' })
+export const GoogleLoginSchema = z.object({
+  id_token: z.string().min(10),
+});
+
+export class AuthController {
+  constructor(private service: AuthService) {}
+
+  async googleLogin(body: unknown, signJwt: (payload: any) => Promise<string>) {
+    const parsed = GoogleLoginSchema.parse(body);
+    return this.service.loginWithGoogleIdToken(parsed, signJwt);
+  }
+}

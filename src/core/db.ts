@@ -1,30 +1,21 @@
-import { MongoClient, Db } from 'mongodb'
-import { config } from './config'
+import { MongoClient, Db } from "mongodb";
 
-const uri = config.mongo.uri
-const dbName = config.mongo.dbName
+const uri = process.env.MONGODB_URI!;
+const dbName = process.env.MONGODB_DB!;
 
-if (!uri) {
-  throw new Error('MONGO_URI is not defined')
-}
-if (!dbName) {
-  throw new Error('MONGO_DB_NAME is not defined')
-}
+const client = new MongoClient(uri);
 
-let client: MongoClient | null = null
-let database: Db | null = null
+let _db: Db | null = null;
 
-export async function connectToDatabase(): Promise<Db> {
-  if (database) return database
-
-  client = new MongoClient(uri)
-  await client.connect()
-  database = client.db(dbName)
-
-  console.log('[DB] Connected to MongoDB:', dbName)
-  return database
+export async function connectDB() {
+  if (!_db) {
+    await client.connect();
+    _db = client.db(dbName);
+  }
+  return _db;
 }
 
-export async function db() {
-  return connectToDatabase()
+export function db(): Db {
+  if (!_db) throw new Error("DB not connected. Call connectDB() first.");
+  return _db;
 }

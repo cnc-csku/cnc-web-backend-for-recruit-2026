@@ -1,6 +1,86 @@
-import type { Auth } from './auth.model'
-import { db } from '../../core/db'
+import { OAuth2Client } from "google-auth-library";
+import type { User } from "./auth.model";
+import { usersCol } from "./auth.model";
+
+export type GoogleLoginInput = {
+  id_token: string;
+};
+
+export type AuthResult = {
+  accessToken: string;
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+    picture?: string;
+  };
+};
 
 export class AuthService {
+  private googleClient: OAuth2Client;
 
+  constructor(private opts: { googleClientId: string }) {
+    this.googleClient = new OAuth2Client(opts.googleClientId);
+  }
+
+  async loginWithGoogleIdToken(
+    input: GoogleLoginInput,
+    signJwt: (payload: any) => Promise<string>
+  ): Promise<AuthResult> {
+    const ticket = await this.googleClient.verifyIdToken({
+      idToken: input.id_token,
+      audience: this.opts.googleClientId,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) throw new Error("Invalid Google token payload");
+
+    const email = payload.email;
+    const emailVerified = payload.email_verified;
+    if (!email || !emailVerified) throw new Error("Email not verified");
+
+    if (!email.toLowerCase().endsWith("@ku.th")) {
+      throw new Error("Only @ku.th accounts are allowed");
+    }
+
+    const googleSub = payload.sub; // unique user id
+    const name = payload.name ?? undefined;
+    const picture = payload.picture ?? undefined;
+
+    const now = new Date();
+    const update: Partial<User> = {
+      googleSub,
+      email,
+      name,
+      picture,
+      updatedAt: now,
+    };
+
+    const existing = await usersCol.findOne({ googleSub });
+    if (!existing) {
+      await usersCol.insertOne({
+        ...update,
+        createdAt: now,
+      } as User);
+    } else {
+      await usersCol.updateOne({ googleSub }, { $set: update });
+    }
+
+    const accessToken = await signJwt({
+      sub: googleSub,
+      email,
+      name,
+      role: "user",
+    });
+
+    return {
+      accessToken,
+      user: {
+        id: googleSub,
+        email,
+        name,
+        picture,
+      },
+    };
+  }
 }

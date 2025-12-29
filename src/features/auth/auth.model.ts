@@ -1,9 +1,14 @@
-import { t } from 'elysia'
+import { db } from "../../core/db";
+import type { ObjectId } from "mongodb";
 
-export const AuthModel = {
-    auth: t.Object({
+export type User = {
+  _id?: ObjectId;
+  googleSub: string;
+  email: string;
+  name?: string;
+  picture?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
-    })
-}
-
-export type Auth = typeof AuthModel.auth.static
+export const usersCol = db().collection<User>("users");
