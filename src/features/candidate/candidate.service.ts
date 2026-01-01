@@ -24,6 +24,7 @@ export class CandidateService {
       ...data,
       interviewQuestions: [],
       currentInterviewRoom: null,
+      edited: 0,
       createdAt: new Date(),
     };
     return await candidatesCol.insertOne(candidate);

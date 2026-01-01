@@ -39,6 +39,7 @@ export const CandidateModel = {
     question5: t.String(),
     interviewQuestions: t.Optional(t.Array(InterviewQuestion)),
     currentInterviewRoom: t.Nullable(InterviewRoom),
+    edited: t.Number(),
     createdAt: t.Date(),
   }),
 
