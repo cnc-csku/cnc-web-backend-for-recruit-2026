@@ -1,17 +1,20 @@
-import {
-  type CreateCandidateBody,
-  type Candidate,
-  CandidateModel,
-} from "./candidate.model";
-import { db } from "../../core/db";
-import Elysia from "elysia";
+import { Elysia } from "elysia";
+import { CandidateModel } from "./candidate.model";
+import { CandidateController } from "./candidate.controller";
+import { CandidateService } from "./candidate.service";
 
-new Elysia({ prefix: "/candidate" }).post(
-  "/submit",
-  ({ body }) => {
-    return "hi";
-  },
-  {
-    body: CandidateModel.createCandidateBody,
-  }
-);
+const candidateService = new CandidateService();
+const candidateController = new CandidateController(candidateService);
+
+export const candidateRoute = new Elysia({ prefix: "/candidate" })
+  .decorate("candidateController", candidateController)
+  .get("/", () => {})
+  .post(
+    "/submit",
+    ({ body }) => {
+      return "hi";
+    },
+    {
+      body: CandidateModel.createCandidateBody,
+    }
+  );

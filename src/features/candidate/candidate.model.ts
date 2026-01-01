@@ -1,4 +1,5 @@
 import { t } from "elysia";
+import { db } from "../../core/db";
 
 export const ReferralSource = t.Union([
   t.Literal("SENIOR"),
@@ -60,5 +61,8 @@ export const CandidateModel = {
 };
 
 export type Candidate = typeof CandidateModel.candidate.static;
+
 export type CreateCandidateBody =
   typeof CandidateModel.createCandidateBody.static;
+
+export const candidatesCol = db().collection<Candidate>("candidates");

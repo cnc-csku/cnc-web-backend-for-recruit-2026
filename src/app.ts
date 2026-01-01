@@ -1,7 +1,8 @@
-import { Elysia } from 'elysia'
-import { authController } from './features/auth/auth.controller'
-import { candidateController } from './features/candidate/candidate.controller'
+import { Elysia } from "elysia";
+import { connectDB } from "./core/db";
+import { candidateRoute } from "./features/candidate/candidate.route";
 
 export const app = new Elysia()
-  .use(authController)
-  .use(candidateController)
+  .get("/health", () => ({ ok: true }))
+  .use(candidateRoute)
+  .listen(4000);
