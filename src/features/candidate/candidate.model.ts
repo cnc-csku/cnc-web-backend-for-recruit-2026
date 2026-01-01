@@ -1,5 +1,6 @@
 import { t } from "elysia";
 import { db } from "../../core/db";
+import { WithId } from "mongodb";
 
 export const ReferralSource = t.Union([
   t.Literal("SENIOR"),
@@ -22,7 +23,6 @@ export const InterviewQuestion = t.Object({
 
 export const CandidateModel = {
   candidate: t.Object({
-    id: t.String(), // or _id
     fullName: t.String(),
     yearOfStudy: t.Number(),
     email: t.String(),
@@ -37,8 +37,8 @@ export const CandidateModel = {
     question3: t.String(),
     question4: t.String(),
     question5: t.String(),
-    interviewQuestions: t.Array(InterviewQuestion),
-    currentInterviewRoom: InterviewRoom || null,
+    interviewQuestions: t.Optional(t.Array(InterviewQuestion)),
+    currentInterviewRoom: t.Nullable(InterviewRoom),
     createdAt: t.Date(),
   }),
 
@@ -65,4 +65,6 @@ export type Candidate = typeof CandidateModel.candidate.static;
 export type CreateCandidateBody =
   typeof CandidateModel.createCandidateBody.static;
 
-export const candidatesCol = db().collection<Candidate>("candidates");
+export type CandidateInsert = typeof CandidateModel.candidate.static;
+
+export const candidatesCol = (await db()).collection<Candidate>("candidates");

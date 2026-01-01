@@ -6,13 +6,15 @@ import { CandidateService } from "./candidate.service";
 const candidateService = new CandidateService();
 const candidateController = new CandidateController(candidateService);
 
-export const candidateRoute = new Elysia({ prefix: "/candidate" })
+export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .decorate("candidateController", candidateController)
-  .get("/", () => {})
+  .get("/", async () => {
+    return await candidateController.getAllCandidates();
+  })
   .post(
     "/submit",
-    ({ body }) => {
-      return "hi";
+    async ({ body, candidateController }) => {
+      return await candidateController.createCandidate(body);
     },
     {
       body: CandidateModel.createCandidateBody,
