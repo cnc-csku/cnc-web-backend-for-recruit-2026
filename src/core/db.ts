@@ -17,12 +17,30 @@ let database: Db | null = null;
 export async function connectToDatabase(): Promise<Db> {
   if (database) return database;
 
-  client = new MongoClient(uri);
-  await client.connect();
-  database = client.db(dbName);
+  try {
+    client = new MongoClient(uri);
 
-  console.log("[DB] Connected to MongoDB:", dbName);
-  return database;
+    console.log("[DB] Connecting to MongoDB...");
+    await client.connect();
+
+    database = client.db(dbName);
+    console.log("[DB] Connected to MongoDB:", dbName);
+
+    client.on("close", () => {
+      console.error("[DB] MongoDB connection closed");
+      database = null;
+      client = null;
+    });
+
+    return database;
+  } catch (err) {
+    console.error("[DB] Failed to connect to MongoDB");
+    console.error(err);
+    client = null;
+    database = null;
+
+    throw err;
+  }
 }
 
 export async function db() {
