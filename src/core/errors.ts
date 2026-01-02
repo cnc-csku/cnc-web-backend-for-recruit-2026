@@ -30,3 +30,27 @@ export class EditLimitExceededError extends DomainError {
     super(message);
   }
 }
+
+export class FormConfigError extends DomainError {
+  statusCode = 404;
+  code = "FORM_CONFIG_NOT_SET";
+  constructor(message = "Form config not set") {
+    super(message);
+  }
+}
+
+export class SubmissionDisabledError extends DomainError {
+  statusCode = 403;
+  code = "SUBMISSION_DISABLED";
+  constructor(message = "Submission has beed temporary disabled") {
+    super(message);
+  }
+}
+
+export class SubmissionWindowClosedError extends DomainError {
+  statusCode = 403;
+  code = "SUBMISSION_WINDOW_CLOSE";
+  constructor(message = "Submission is not allowed at this time") {
+    super(message);
+  }
+}

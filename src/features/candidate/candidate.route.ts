@@ -1,17 +1,6 @@
 import { Elysia } from "elysia";
 import { CandidateModel } from "./candidate.model";
-import { CandidateController } from "./candidate.controller";
-import { CandidateService } from "./candidate.service";
-import { InterviewQuestionService } from "../interviewQuestion/interviewQuestion.service";
-import { InterviewQuestionModel } from "../interviewQuestion/interviewQuestion.model";
-import { InterviewQuestionController } from "../interviewQuestion/interviewQuestion.controller";
-
-const interviewQuestionServive = new InterviewQuestionService();
-const interviewQuestionController = new InterviewQuestionController(
-  interviewQuestionServive
-);
-const candidateService = new CandidateService(interviewQuestionController);
-const candidateController = new CandidateController(candidateService);
+import { candidateController } from "../../lib/controllers";
 //TODO: get profile from auth
 //TODO: Middleware rate limit
 

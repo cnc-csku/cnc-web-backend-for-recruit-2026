@@ -13,12 +13,14 @@ import {
 import { ObjectId } from "mongodb";
 import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
 import { InterviewQuestionController } from "../interviewQuestion/interviewQuestion.controller";
+import { FormController } from "../form/form.controller";
 
 const MAX_EDIT_ALLOW = 2;
 
 export class CandidateService {
   constructor(
-    private interviewQuestionController: InterviewQuestionController
+    private interviewQuestionController: InterviewQuestionController,
+    private formController: FormController
   ) {}
 
   async getAlls(): Promise<Candidate[]> {
@@ -29,7 +31,7 @@ export class CandidateService {
     return await candidatesCol.findOne({ email: email });
   }
 
-  //only include interview when lookup by id
+  //only include interviewquestion when lookup by id
   async findById(id: string): Promise<CandidateWithInterviewQuestions> {
     const _id = new ObjectId(id);
     const candidate = await candidatesCol.findOne({ _id });
@@ -64,6 +66,8 @@ export class CandidateService {
   }
 
   async createCandidate(data: CreateCandidateBody) {
+    await this.formController.assertSubmissionAllowed();
+
     const exist = await this.findByEmail(data.email);
     if (exist) throw new DuplicateCandidateError();
 
