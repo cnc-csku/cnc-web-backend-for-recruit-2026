@@ -13,7 +13,7 @@ export const formAdminRoute = new Elysia({ prefix: "/form" })
   )
   .patch(
     "/set-allow-submit",
-    async ({ formController, body }) => {
+    async ({ formController, body,request }) => {
       return await formController.setAllowSubmit(body.allowSubmit);
     },
     {
