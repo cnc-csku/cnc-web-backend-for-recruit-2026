@@ -7,6 +7,7 @@ import {
   DuplicateCandidateError,
   EditLimitExceededError,
 } from "../../core/errors";
+import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
 
 export class CandidateController {
   constructor(private service: CandidateService) {}
@@ -21,15 +22,16 @@ export class CandidateController {
 
   async updateCandidate(
     candidateId: string,
-    data: Partial<CreateCandidateBody>
+    data: Partial<CreateCandidateBody>,
+    isAdmin: boolean = false
   ) {
     try {
-      return await this.service.updateCandidate(candidateId, data);
+      return await this.service.updateCandidate(candidateId, data, isAdmin);
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
       }
-      throw new Error("Failed to create candidate");
+      throw new Error("Failed to update candidate");
     }
   }
 
@@ -42,5 +44,56 @@ export class CandidateController {
       }
       throw new Error("Failed to create candidate");
     }
+  }
+
+  async deleteCandidate(id: string) {
+    return await this.service.deleteById(id);
+  }
+
+  async getInterViewQuestions(id: string) {
+    try {
+      return await this.service.getInterViewQuestions(id);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to get question");
+    }
+  }
+
+  async addInterViewQuestion(
+    id: string,
+    data: Omit<CreateInterViewQuestBody, "candidateId">
+  ) {
+    try {
+      return await this.service.addInterViewQuestion(id, data);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to add question");
+    }
+  }
+
+  async updateInterViewQuestion(
+    candidateId: string,
+    questionId: string,
+    data: Omit<CreateInterViewQuestBody, "candidateId">
+  ) {
+    try {
+      return await this.service.updateInterViewQuestion(
+        candidateId,
+        questionId,
+        data
+      );
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to update question");
+    }
+  }
+  async deleteInterviewQuestion(questionId: string) {
+    return await this.service.deleteInterViewQuestion(questionId);
   }
 }

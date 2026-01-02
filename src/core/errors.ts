@@ -18,7 +18,7 @@ export class DuplicateCandidateError extends DomainError {
 export class CandidateNotFoundError extends DomainError {
   statusCode = 404;
   code = "CANDIDATE_NOTFOUND";
-  constructor(message = "Candidate already exists") {
+  constructor(message = "Candidate not found") {
     super(message);
   }
 }

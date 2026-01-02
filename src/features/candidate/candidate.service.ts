@@ -2,7 +2,7 @@ import {
   type CreateCandidateBody,
   type Candidate,
   candidatesCol,
-  CandidateInsert,
+  CandidateWithInterviewQuestions,
 } from "./candidate.model";
 import { db } from "../../core/db";
 import {
@@ -11,26 +11,40 @@ import {
   EditLimitExceededError,
 } from "../../core/errors";
 import { ObjectId } from "mongodb";
+import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
+import { InterviewQuestionController } from "../interviewQuestion/interviewQuestion.controller";
 
 const MAX_EDIT_ALLOW = 2;
 
 export class CandidateService {
-  async getAlls() {
+  constructor(
+    private interviewQuestionController: InterviewQuestionController
+  ) {}
+
+  async getAlls(): Promise<Candidate[]> {
     return await candidatesCol.find({}).toArray();
   }
 
-  async findByEmail(email: string) {
-    return await candidatesCol.find({ email: email }).toArray();
+  async findByEmail(email: string): Promise<Candidate | null> {
+    return await candidatesCol.findOne({ email: email });
   }
 
-  async findById(id: string) {
+  //only include interview when lookup by id
+  async findById(id: string): Promise<CandidateWithInterviewQuestions> {
     const _id = new ObjectId(id);
-    return await candidatesCol.findOne({ _id });
+    const candidate = await candidatesCol.findOne({ _id });
+    if (!candidate) throw new CandidateNotFoundError();
+
+    const interviewQ = await this.interviewQuestionController.getByCandidateId(
+      id
+    );
+    return { ...candidate, interviewQuestions: interviewQ };
   }
 
   async updateCandidate(
     candidateId: string,
-    data: Partial<CreateCandidateBody>
+    data: Partial<CreateCandidateBody>,
+    isAdmin: boolean = false
   ) {
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
@@ -42,7 +56,7 @@ export class CandidateService {
       {
         $set: { ...data, updatedAt: new Date() },
         $inc: {
-          editCount: 1,
+          editCount: isAdmin ? 0 : 1,
         },
       }
     );
@@ -50,17 +64,61 @@ export class CandidateService {
   }
 
   async createCandidate(data: CreateCandidateBody) {
-    const exists = await this.findByEmail(data.email);
-    if (exists.length !== 0) throw new DuplicateCandidateError();
+    const exist = await this.findByEmail(data.email);
+    if (exist) throw new DuplicateCandidateError();
 
-    const candidate: CandidateInsert = {
+    const candidate: Candidate = {
       ...data,
-      interviewQuestions: [],
       currentInterviewRoom: null,
       editCount: 0,
       createdAt: new Date(),
       updatedAt: null,
     };
     return await candidatesCol.insertOne(candidate);
+  }
+
+  async deleteById(id: string) {
+    const _id = new ObjectId(id);
+    return await candidatesCol.deleteOne({ _id });
+  }
+
+  async getInterViewQuestions(id: string) {
+    const exist = await this.findById(id);
+    if (!exist) throw new CandidateNotFoundError();
+
+    return await this.interviewQuestionController.getByCandidateId(id);
+  }
+
+  async addInterViewQuestion(
+    id: string,
+    data: Omit<CreateInterViewQuestBody, "candidateId">
+  ) {
+    const exist = await this.findById(id);
+    if (!exist) throw new CandidateNotFoundError();
+
+    return await this.interviewQuestionController.createInterViewQuestion(
+      id,
+      data
+    );
+  }
+
+  async updateInterViewQuestion(
+    candidateId: string,
+    questionid: string,
+    data: Omit<CreateInterViewQuestBody, "candidateId">
+  ) {
+    const exist = await this.findById(candidateId);
+    if (!exist) throw new CandidateNotFoundError();
+
+    return await this.interviewQuestionController.updateInterViewQuestion(
+      questionid,
+      data
+    );
+  }
+
+  async deleteInterViewQuestion(questionId: string) {
+    return await this.interviewQuestionController.deleteQuestionById(
+      questionId
+    );
   }
 }

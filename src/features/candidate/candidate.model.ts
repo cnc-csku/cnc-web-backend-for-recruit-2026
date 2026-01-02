@@ -1,6 +1,10 @@
 import { t } from "elysia";
 import { db } from "../../core/db";
 import { WithId } from "mongodb";
+import {
+  InterviewQuestionModel,
+  type InterViewQuestion,
+} from "../interviewQuestion/interviewQuestion.model";
 
 export const ReferralSource = t.Union([
   t.Literal("SENIOR"),
@@ -13,13 +17,6 @@ export const InterviewRoom = t.Union([
   t.Literal("ATTITUDE"),
   t.Literal("TECHNICAL"),
 ]);
-
-export const InterviewQuestion = t.Object({
-  questionTitle: t.String(),
-  answer: t.String(),
-  score: t.Number(),
-  audioFileName: t.String(),
-});
 
 export const CandidateModel = {
   candidate: t.Object({
@@ -37,7 +34,6 @@ export const CandidateModel = {
     question3: t.String(),
     question4: t.String(),
     question5: t.String(),
-    interviewQuestions: t.Optional(t.Array(InterviewQuestion)),
     currentInterviewRoom: t.Nullable(InterviewRoom),
     editCount: t.Number(),
     createdAt: t.Date(),
@@ -63,10 +59,11 @@ export const CandidateModel = {
 };
 
 export type Candidate = typeof CandidateModel.candidate.static;
+export type CandidateWithInterviewQuestions = Candidate & {
+  interviewQuestions: InterViewQuestion[];
+};
 
 export type CreateCandidateBody =
   typeof CandidateModel.createCandidateBody.static;
-
-export type CandidateInsert = typeof CandidateModel.candidate.static;
 
 export const candidatesCol = (await db()).collection<Candidate>("candidates");
