@@ -1,3 +1,4 @@
+import { AuditMeta } from "../auditLog/audit.model";
 import { CreateInterViewQuestBody } from "./interviewQuestion.model";
 import { InterviewQuestionService } from "./interviewQuestion.service";
 
@@ -10,19 +11,21 @@ export class InterviewQuestionController {
 
   async createInterViewQuestion(
     candidateId: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">
+    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    meta: AuditMeta
   ) {
-    return await this.service.createInterViewQuestion(candidateId, data);
+    return await this.service.createInterViewQuestion(candidateId, data, meta);
   }
 
   async updateInterViewQuestion(
     candidateId: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">
+    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    meta: AuditMeta
   ) {
-    return await this.service.updateInterViewQuestion(candidateId, data);
+    return await this.service.updateInterViewQuestion(candidateId, data, meta);
   }
 
-  async deleteQuestionById(questionId: string) {
-    return await this.service.deleteById(questionId);
+  async deleteQuestionById(questionId: string, meta: AuditMeta) {
+    return await this.service.deleteById(questionId, meta);
   }
 }

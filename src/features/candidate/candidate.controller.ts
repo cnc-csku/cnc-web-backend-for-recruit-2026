@@ -8,6 +8,7 @@ import {
   EditLimitExceededError,
 } from "../../core/errors";
 import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
+import { AuditMeta } from "../auditLog/audit.model";
 
 export class CandidateController {
   constructor(private service: CandidateService) {}
@@ -23,10 +24,16 @@ export class CandidateController {
   async updateCandidate(
     candidateId: string,
     data: Partial<CreateCandidateBody>,
-    isAdmin: boolean = false
+    isAdmin: boolean = false,
+    meta: AuditMeta
   ) {
     try {
-      return await this.service.updateCandidate(candidateId, data, isAdmin);
+      return await this.service.updateCandidate(
+        candidateId,
+        data,
+        isAdmin,
+        meta
+      );
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
@@ -35,9 +42,9 @@ export class CandidateController {
     }
   }
 
-  async createCandidate(data: CreateCandidateBody) {
+  async createCandidate(data: CreateCandidateBody, meta: AuditMeta) {
     try {
-      return await this.service.createCandidate(data);
+      return await this.service.createCandidate(data, meta);
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
@@ -46,8 +53,8 @@ export class CandidateController {
     }
   }
 
-  async deleteCandidate(id: string) {
-    return await this.service.deleteById(id);
+  async deleteCandidate(id: string, meta: AuditMeta) {
+    return await this.service.deleteById(id, meta);
   }
 
   async getInterViewQuestions(id: string) {
@@ -63,10 +70,11 @@ export class CandidateController {
 
   async addInterViewQuestion(
     id: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">
+    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    meta: AuditMeta
   ) {
     try {
-      return await this.service.addInterViewQuestion(id, data);
+      return await this.service.addInterViewQuestion(id, data, meta);
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
@@ -78,13 +86,15 @@ export class CandidateController {
   async updateInterViewQuestion(
     candidateId: string,
     questionId: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">
+    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    meta: AuditMeta
   ) {
     try {
       return await this.service.updateInterViewQuestion(
         candidateId,
         questionId,
-        data
+        data,
+        meta
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -93,7 +103,7 @@ export class CandidateController {
       throw new Error("Failed to update question");
     }
   }
-  async deleteInterviewQuestion(questionId: string) {
-    return await this.service.deleteInterViewQuestion(questionId);
+  async deleteInterviewQuestion(questionId: string, meta: AuditMeta) {
+    return await this.service.deleteInterViewQuestion(questionId, meta);
   }
 }
