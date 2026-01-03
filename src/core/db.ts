@@ -1,21 +1,48 @@
 import { MongoClient, Db } from "mongodb";
+import { config } from "./config";
 
-const uri = process.env.MONGODB_URI!;
-const dbName = process.env.MONGODB_DB!;
+const uri = config.mongo.uri;
+const dbName = config.mongo.dbName;
 
-const client = new MongoClient(uri);
-
-let _db: Db | null = null;
-
-export async function connectDB() {
-  if (!_db) {
-    await client.connect();
-    _db = client.db(dbName);
-  }
-  return _db;
+if (!uri) {
+  throw new Error("MONGO_URI is not defined");
+}
+if (!dbName) {
+  throw new Error("MONGO_DB_NAME is not defined");
 }
 
-export function db(): Db {
-  if (!_db) throw new Error("DB not connected. Call connectDB() first.");
-  return _db;
+let client: MongoClient | null = null;
+let database: Db | null = null;
+
+export async function connectToDatabase(): Promise<Db> {
+  if (database) return database;
+
+  try {
+    client = new MongoClient(uri);
+
+    console.log("[DB] Connecting to MongoDB...");
+    await client.connect();
+
+    database = client.db(dbName);
+    console.log("[DB] Connected to MongoDB:", dbName);
+
+    client.on("close", () => {
+      console.error("[DB] MongoDB connection closed");
+      database = null;
+      client = null;
+    });
+
+    return database;
+  } catch (err) {
+    console.error("[DB] Failed to connect to MongoDB");
+    console.error(err);
+    client = null;
+    database = null;
+
+    throw err;
+  }
+}
+
+export async function db() {
+  return connectToDatabase();
 }
