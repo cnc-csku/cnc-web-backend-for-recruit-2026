@@ -10,7 +10,6 @@ export async function bootstrapFormConfig() {
         allowSubmit: false,
         opensAt: new Date("2099-01-01T00:00:00Z"),
         closesAt: new Date("2099-01-02T00:00:00Z"),
-        forceClosed: true,
         createdAt: new Date(),
       },
     },

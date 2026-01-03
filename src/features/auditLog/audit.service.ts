@@ -1,3 +1,4 @@
+import { PaginationParams } from "../../../shared/shared.model";
 import { AuditLog, auditLogsCol } from "./audit.model";
 
 export class AuditLogService {
@@ -9,7 +10,12 @@ export class AuditLogService {
     await auditLogsCol.insertOne(log);
   }
 
-  async getAll() {
-    return await auditLogsCol.find({}).toArray();
+  async getAll({ page = 1, limit = 15 }: PaginationParams) {
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      auditLogsCol.find({}).skip(skip).limit(limit).toArray(),
+      auditLogsCol.countDocuments(),
+    ]);
+    return { data, total };
   }
 }

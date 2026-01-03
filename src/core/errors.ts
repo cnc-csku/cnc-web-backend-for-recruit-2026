@@ -54,3 +54,11 @@ export class SubmissionWindowClosedError extends DomainError {
     super(message);
   }
 }
+
+export class ScheduleNotFoundError extends DomainError {
+  statusCode = 404;
+  code = "SCHEDULE_NOTFOUND";
+  constructor(message = "Schedule not set") {
+    super(message);
+  }
+}

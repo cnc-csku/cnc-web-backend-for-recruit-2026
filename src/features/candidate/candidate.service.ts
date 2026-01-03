@@ -14,13 +14,18 @@ import { ObjectId } from "mongodb";
 import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
 import { InterviewQuestionController } from "../interviewQuestion/interviewQuestion.controller";
 import { FormController } from "../form/form.controller";
+import { AuditLogController } from "../auditLog/audit.controller";
+import { AuditMeta } from "../auditLog/audit.model";
+import { buildProjection } from "../../utils/buildProjection";
+import { AuditUtils } from "../auditLog/audit.utils";
 
 const MAX_EDIT_ALLOW = 2;
 
 export class CandidateService {
   constructor(
     private interviewQuestionController: InterviewQuestionController,
-    private formController: FormController
+    private formController: FormController,
+    private auditController: AuditLogController
   ) {}
 
   async getAlls(): Promise<Candidate[]> {
@@ -46,26 +51,49 @@ export class CandidateService {
   async updateCandidate(
     candidateId: string,
     data: Partial<CreateCandidateBody>,
-    isAdmin: boolean = false
+    isAdmin: boolean = false,
+    meta: AuditMeta
   ) {
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
-    if (exist.editCount >= MAX_EDIT_ALLOW) throw new EditLimitExceededError();
+    if (exist.editCount >= MAX_EDIT_ALLOW && !isAdmin)
+      throw new EditLimitExceededError();
 
     const _id = new ObjectId(candidateId);
-    const result = await candidatesCol.updateOne(
+
+    const before = await candidatesCol.findOne({ _id });
+
+    const { email, ...rest } = data;
+    const result = await candidatesCol.findOneAndUpdate(
       { _id },
       {
-        $set: { ...data, updatedAt: new Date() },
+        $set: { ...rest, updatedAt: new Date() },
         $inc: {
           editCount: isAdmin ? 0 : 1,
         },
-      }
+      },
+      { returnDocument: "after" }
     );
+    if (!result) return null;
+
+    const changes = AuditUtils.calculateDiff(before, result);
+
+    this.auditController.audit({
+      ...meta,
+      action: "EDIT_CANDIDATE",
+      changes: {
+        before: changes.before,
+        after: changes.after,
+      },
+      target: {
+        type: "CANDIDATE",
+        id: candidateId,
+      },
+    });
     return result;
   }
 
-  async createCandidate(data: CreateCandidateBody) {
+  async createCandidate(data: CreateCandidateBody, meta: AuditMeta) {
     await this.formController.assertSubmissionAllowed();
 
     const exist = await this.findByEmail(data.email);
@@ -78,12 +106,49 @@ export class CandidateService {
       createdAt: new Date(),
       updatedAt: null,
     };
-    return await candidatesCol.insertOne(candidate);
+    const result = await candidatesCol.insertOne(candidate);
+
+    this.auditController.audit({
+      ...meta,
+      action: "SUBMIT_CANDIDATE",
+      changes: {
+        before: null,
+        after: candidate,
+      },
+      target: {
+        type: "CANDIDATE",
+        id: result.insertedId.toString(),
+      },
+    });
+    return result;
   }
 
-  async deleteById(id: string) {
+  async deleteById(id: string, meta: AuditMeta) {
     const _id = new ObjectId(id);
-    return await candidatesCol.deleteOne({ _id });
+    const result = await candidatesCol.findOneAndDelete(
+      { _id },
+      {
+        projection: {
+          fullName: 1,
+          email: 1,
+        },
+      }
+    );
+    if (!result) return null;
+
+    this.auditController.audit({
+      ...meta,
+      action: "DELETE_CANDIDATE",
+      changes: {
+        before: null,
+        after: result,
+      },
+      target: {
+        type: "CANDIDATE",
+        id: id,
+      },
+    });
+    return result;
   }
 
   async getInterViewQuestions(id: string) {
@@ -95,34 +160,40 @@ export class CandidateService {
 
   async addInterViewQuestion(
     id: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">
+    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    meta: AuditMeta
   ) {
     const exist = await this.findById(id);
     if (!exist) throw new CandidateNotFoundError();
-
-    return await this.interviewQuestionController.createInterViewQuestion(
-      id,
-      data
-    );
+    const result =
+      await this.interviewQuestionController.createInterViewQuestion(
+        id,
+        data,
+        meta
+      );
+    return result;
   }
 
   async updateInterViewQuestion(
     candidateId: string,
     questionid: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">
+    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    meta: AuditMeta
   ) {
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
 
     return await this.interviewQuestionController.updateInterViewQuestion(
       questionid,
-      data
+      data,
+      meta
     );
   }
 
-  async deleteInterViewQuestion(questionId: string) {
+  async deleteInterViewQuestion(questionId: string, meta: AuditMeta) {
     return await this.interviewQuestionController.deleteQuestionById(
-      questionId
+      questionId,
+      meta
     );
   }
 }

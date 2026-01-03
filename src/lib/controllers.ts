@@ -7,10 +7,15 @@ import { FormService } from "../features/form/form.service";
 import { InterviewQuestionController } from "../features/interviewQuestion/interviewQuestion.controller";
 import { InterviewQuestionService } from "../features/interviewQuestion/interviewQuestion.service";
 
-const formService = new FormService();
-const formController = new FormController(formService);
-const interviewQuestionServive = new InterviewQuestionService();
 const auditLogService = new AuditLogService();
+const auditLogController = new AuditLogController(auditLogService);
+
+const formService = new FormService(auditLogController);
+const formController = new FormController(formService);
+
+const interviewQuestionServive = new InterviewQuestionService(
+  auditLogController
+);
 
 const interviewQuestionController = new InterviewQuestionController(
   interviewQuestionServive
@@ -18,10 +23,10 @@ const interviewQuestionController = new InterviewQuestionController(
 
 const candidateService = new CandidateService(
   interviewQuestionController,
-  formController
+  formController,
+  auditLogController
 );
 const candidateController = new CandidateController(candidateService);
-const auditLogController = new AuditLogController(auditLogService);
 
 export {
   formController,

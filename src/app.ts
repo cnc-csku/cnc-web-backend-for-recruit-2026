@@ -4,6 +4,7 @@ import { DomainError } from "./core/errors";
 import { adminRoute } from "./features/admin/admin.route";
 import { bootstrapFormConfig } from "./core/bootstrap";
 import { formRoute } from "./features/form/form.route";
+import { ip } from "elysia-ip";
 
 await bootstrapFormConfig();
 export const app = new Elysia()
@@ -15,6 +16,8 @@ export const app = new Elysia()
         code: error.code,
         message: error.message,
       };
+    } else {
+      console.error(error);
     }
   })
   .use(adminRoute)

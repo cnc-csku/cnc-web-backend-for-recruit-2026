@@ -24,7 +24,7 @@ export const AuditLogModel = {
   auditLog: t.Object({
     actor: t.Object({
       userId: t.Nullable(t.String()),
-      role: t.String(),
+      email: t.String(),
     }),
 
     action: AuditActions,
@@ -36,16 +36,25 @@ export const AuditLogModel = {
 
     changes: t.Optional(
       t.Object({
-        before: t.Record(t.String(), t.Unknown()),
-        after: t.Record(t.String(), t.Unknown()),
+        before: t.Nullable(t.Record(t.String(), t.Unknown())),
+        after: t.Nullable(t.Record(t.String(), t.Unknown())),
       })
     ),
 
     ip: t.String(),
     createdAt: t.Date(),
   }),
+  auditMeta: t.Object({
+    actor: t.Object({
+      userId: t.Nullable(t.String()),
+      email: t.String(),
+    }),
+    ip: t.String(),
+  }),
 };
 
 export type AuditLog = typeof AuditLogModel.auditLog.static;
+
+export type AuditMeta = typeof AuditLogModel.auditMeta.static;
 
 export const auditLogsCol = (await db()).collection<AuditLog>("audit_logs");
