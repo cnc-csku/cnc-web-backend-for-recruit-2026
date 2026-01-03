@@ -11,4 +11,4 @@ export type User = {
   updatedAt: Date;
 };
 
-export const usersCol = db().collection<User>("users");
+export const usersCol = (await db()).collection<User>("users");
