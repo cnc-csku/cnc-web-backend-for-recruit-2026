@@ -1,8 +1,6 @@
 import { t } from "elysia";
 import { db } from "../../core/db";
-import { WithId } from "mongodb";
 import {
-  InterviewQuestionModel,
   type InterViewQuestion,
 } from "../interviewQuestion/interviewQuestion.model";
 
@@ -18,22 +16,48 @@ export const InterviewRoom = t.Union([
   t.Literal("TECHNICAL"),
 ]);
 
+export const TypeOfDPM = t.Union([t.Literal("NORMAL"), t.Literal("SPECIAL")]);
+export const NisitYearParticipated = t.Union([
+  t.Literal(83),
+  t.Literal(84),
+  t.Literal(85),
+]);
+
 export const CandidateModel = {
   candidate: t.Object({
-    fullName: t.String(),
-    yearOfStudy: t.Number(),
-    email: t.String(),
-    province: t.String(),
+    userId: t.String({ minLength: 1 }),
+    email: t.String({ minLength: 1 }),
+    nisitId: t.String({ minLength: 10, maxLength: 10 }),
+    firstName: t.String({ minLength: 1 }),
+    lastName: t.String({ minLength: 1 }),
+    nickName: t.String({ minLength: 1 }),
     bio: t.String(),
+    typeOfDpm: TypeOfDPM,
+    nisitYearParticipated: NisitYearParticipated,
+    gradeGPAX: t.Number({
+      minimum: 0,
+      maximum: 4,
+      multipleOf: 0.01,
+    }),
     profileImagePath: t.String(),
-    projectExperience: t.String(),
+    transcriptPath: t.String(),
+    address: t.String(),
+    mbti: t.String(),
+    phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
+
+    socialContact: t.String(),
+    github: t.String(),
+
+    //questions answer
     referralSource: ReferralSource,
-    reasonForJoining: t.String(),
-    question1: t.String(),
-    question2: t.String(),
-    question3: t.String(),
-    question4: t.String(),
-    question5: t.String(),
+    projectExperience: t.String(),
+    clubs: t.String(),
+    interests: t.String(),
+    hobbies: t.String(),
+    whyCnc: t.String(),
+    expected: t.String(),
+    tools: t.String(),
+
     currentInterviewRoom: t.Nullable(InterviewRoom),
     editCount: t.Number(),
     createdAt: t.Date(),
@@ -41,20 +65,38 @@ export const CandidateModel = {
   }),
 
   createCandidateBody: t.Object({
-    fullName: t.String(),
-    yearOfStudy: t.Number(),
-    email: t.String(),
-    province: t.String(),
+    userId: t.String({ minLength: 1 }),
+    email: t.String({ minLength: 1 }),
+    nisitId: t.String({ minLength: 10, maxLength: 10 }),
+    firstName: t.String({ minLength: 1 }),
+    lastName: t.String({ minLength: 1 }),
+    nickName: t.String({ minLength: 1 }),
     bio: t.String(),
+    typeOfDpm: TypeOfDPM,
+    nisitYearParticipated: NisitYearParticipated,
+    gradeGPAX: t.Number({
+      minimum: 0,
+      maximum: 4,
+      multipleOf: 0.01,
+    }),
     profileImagePath: t.String(),
-    projectExperience: t.String(),
+    transcriptPath: t.String(),
+    address: t.String(),
+    mbti: t.String(),
+    phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
+
+    socialContact: t.String(),
+    github: t.String(),
+
+    //questions answer
     referralSource: ReferralSource,
-    reasonForJoining: t.String(),
-    question1: t.String(),
-    question2: t.String(),
-    question3: t.String(),
-    question4: t.String(),
-    question5: t.String(),
+    projectExperience: t.String(),
+    clubs: t.String(),
+    interests: t.String(),
+    hobbies: t.String(),
+    whyCnc: t.String(),
+    expected: t.String(),
+    tools: t.String(),
   }),
 };
 
