@@ -13,8 +13,7 @@ export const authRoute = new Elysia({ prefix: '/auth' })
   .use(
     jwt({
       name: 'jwt',
-      secret: process.env.JWT_SECRET!,
-      exp: process.env.JWT_EXPIRES ?? '7d',
+      secret: process.env.JWT_SECRET!
     })
   )
   .decorate('authService', authService)
@@ -24,6 +23,7 @@ export const authRoute = new Elysia({ prefix: '/auth' })
       const result = await authController.googleLogin(body, (p) => jwt.sign(p))
       return result
     } catch (err: any) {
+      console.error("AUTH /google error:", err);
       set.status = 401
       return {
         error: 'UNAUTHORIZED',
