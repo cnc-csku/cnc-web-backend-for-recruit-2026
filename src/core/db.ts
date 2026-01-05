@@ -11,38 +11,44 @@ if (!dbName) {
   throw new Error("MONGO_DB_NAME is not defined");
 }
 
-let client: MongoClient | null = null;
+let clientMongo: MongoClient | null = null;
 let database: Db | null = null;
 
-export async function connectToDatabase(): Promise<Db> {
-  if (database) return database;
-
+export async function connectToDatabase(): Promise<{
+  database: Db;
+  client: MongoClient;
+}> {
+  if (database && clientMongo) return { database, client: clientMongo };
   try {
-    client = new MongoClient(uri);
+    clientMongo = new MongoClient(uri);
 
     console.log("[DB] Connecting to MongoDB...");
-    await client.connect();
+    await clientMongo.connect();
 
-    database = client.db(dbName);
+    database = clientMongo.db(dbName);
     console.log("[DB] Connected to MongoDB:", dbName);
 
-    client.on("close", () => {
+    clientMongo.on("close", () => {
       console.error("[DB] MongoDB connection closed");
       database = null;
-      client = null;
+      clientMongo = null;
     });
 
-    return database;
+    return { database, client: clientMongo };
   } catch (err) {
     console.error("[DB] Failed to connect to MongoDB");
     console.error(err);
-    client = null;
+    clientMongo = null;
     database = null;
 
     throw err;
   }
 }
 
+export async function client() {
+  return (await connectToDatabase()).client;
+}
+
 export async function db() {
-  return connectToDatabase();
+  return (await connectToDatabase()).database;
 }

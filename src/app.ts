@@ -5,6 +5,7 @@ import { adminRoute } from "./features/admin/admin.route";
 import { bootstrapFormConfig } from "./core/bootstrap";
 import { formRoute } from "./features/form/form.route";
 import { ip } from "elysia-ip";
+import { interviewSlotRoute } from "./features/InterviewSlot/interviewSlot.route";
 
 await bootstrapFormConfig();
 export const app = new Elysia()
@@ -23,4 +24,5 @@ export const app = new Elysia()
   .use(adminRoute)
   .use(candidateRoute)
   .use(formRoute)
+  .use(interviewSlotRoute)
   .listen(4000);
