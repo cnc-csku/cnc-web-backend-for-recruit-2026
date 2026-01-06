@@ -6,12 +6,14 @@ import {
 } from "./InterviewSlot.model";
 import {
   AlreadyHasSlotError,
+  BadTimeSlotError,
   CandidateNotFoundError,
   HasNoSlotError,
   InterviewSlotFullError,
   InterviewSlotNotFoundError,
   InterviewSlotUnavailableError,
   SlotTimeDuplicateError,
+  SlotTimeOverlapError,
 } from "../../core/errors";
 import { candidatesCol } from "../candidate/candidate.model";
 import { client, db } from "../../core/db";
@@ -26,10 +28,23 @@ export class InterviewSlotService {
   }
 
   async createSlot(data: CreateInterviewSlotBody) {
-    const slot = await interviewSlotCol.findOne({ startTime: data.startTime });
-    if (slot) throw new SlotTimeDuplicateError();
-    
-    return await interviewSlotCol.insertOne(data);
+    if (data.startTime >= data.endTime) {
+      throw new BadTimeSlotError();
+    }
+    const overlapSlot = await interviewSlotCol.findOne({
+      startTime: { $lt: data.endTime },
+      endTime: { $gt: data.startTime },
+    });
+
+    if (overlapSlot) {
+      throw new SlotTimeOverlapError();
+    }
+
+    return await interviewSlotCol.insertOne({
+      ...data,
+      createdAt: new Date(),
+      updatedAt: null,
+    });
   }
 
   async deleteById(slotId: string) {

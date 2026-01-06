@@ -103,10 +103,20 @@ export class HasNoSlotError extends DomainError {
   }
 }
 
-export class SlotTimeDuplicateError extends DomainError {
+export class SlotTimeOverlapError extends DomainError {
   statusCode = 403;
-  code = "SLOT_TIME_DUPLICATE";
-  constructor(message = "Interview slot with this time is already exists") {
+  code = "SLOT_TIME_OVERLAP";
+  constructor(
+    message = "Interview slot with this time is overlap with other slot"
+  ) {
+    super(message);
+  }
+}
+
+export class BadTimeSlotError extends DomainError {
+  statusCode = 403;
+  code = "BAD_TIME_SLOT";
+  constructor(message = "Start time must be before end time") {
     super(message);
   }
 }
