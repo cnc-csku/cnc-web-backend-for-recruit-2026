@@ -1,4 +1,4 @@
-import Elysia, { t } from "elysia";
+import Elysia from "elysia";
 import { FormModel } from "./form.model";
 import { formController } from "../../lib/controllers";
 import { auditPlugin } from "../auditLog/audit.plugin";

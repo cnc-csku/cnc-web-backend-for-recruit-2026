@@ -3,6 +3,7 @@ import { config } from "./config";
 
 const uri = config.mongo.uri;
 const dbName = config.mongo.dbName;
+console.log(uri);
 
 if (!uri) {
   throw new Error("MONGO_URI is not defined");

@@ -103,6 +103,14 @@ export class HasNoSlotError extends DomainError {
   }
 }
 
+export class NotInSlotError extends DomainError {
+  statusCode = 403;
+  code = "NOT_IN_SLOT";
+  constructor(message = "Candidate not in slot") {
+    super(message);
+  }
+}
+
 export class SlotTimeOverlapError extends DomainError {
   statusCode = 403;
   code = "SLOT_TIME_OVERLAP";

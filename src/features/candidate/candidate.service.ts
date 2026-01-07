@@ -6,11 +6,13 @@ import {
 } from "./candidate.model";
 import { db } from "../../core/db";
 import {
+  AlreadyHasSlotError,
   CandidateNotFoundError,
   DuplicateCandidateError,
   EditLimitExceededError,
+  HasNoSlotError,
 } from "../../core/errors";
-import { ObjectId } from "mongodb";
+import { ClientSession, ObjectId } from "mongodb";
 import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
 import { InterviewQuestionController } from "../interviewQuestion/interviewQuestion.controller";
 import { FormController } from "../form/form.controller";
@@ -37,9 +39,15 @@ export class CandidateService {
   }
 
   //only include interviewquestion when lookup by id
-  async findById(id: string): Promise<CandidateWithInterviewQuestions> {
+  async findById(
+    id: string,
+    session?: ClientSession
+  ): Promise<CandidateWithInterviewQuestions> {
     const _id = new ObjectId(id);
-    const candidate = await candidatesCol.findOne({ _id });
+    const candidate = await candidatesCol.findOne(
+      { _id },
+      session ? { session } : undefined
+    );
     if (!candidate) throw new CandidateNotFoundError();
 
     const interviewQ = await this.interviewQuestionController.getByCandidateId(
@@ -195,5 +203,47 @@ export class CandidateService {
       questionId,
       meta
     );
+  }
+
+  async assignInterviewSlot(
+    candidateId: string,
+    slotId: string,
+    session?: ClientSession
+  ) {
+    const candidateIdObj = new ObjectId(candidateId);
+
+    const result = await candidatesCol.updateOne(
+      {
+        _id: candidateIdObj,
+        interviewSlotId: { $exists: false },
+      },
+      {
+        $set: { interviewSlotId: slotId },
+      },
+      session ? { session } : undefined
+    );
+
+    if (result.matchedCount === 0) {
+      throw new AlreadyHasSlotError();
+    }
+  }
+
+  async unassignInterviewSlot(candidateId: string, session?: ClientSession) {
+    const candidateIdObj = new ObjectId(candidateId);
+
+    const result = await candidatesCol.updateOne(
+      {
+        _id: candidateIdObj,
+        interviewSlotId: { $exists: true },
+      },
+      {
+        $unset: { interviewSlotId: "" },
+      },
+      session ? { session } : undefined
+    );
+
+    if (result.matchedCount === 0) {
+      throw new HasNoSlotError();
+    }
   }
 }

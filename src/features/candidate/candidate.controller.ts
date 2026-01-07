@@ -9,12 +9,13 @@ import {
 } from "../../core/errors";
 import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
 import { AuditMeta } from "../auditLog/audit.model";
+import { ClientSession } from "mongodb";
 
 export class CandidateController {
   constructor(private service: CandidateService) {}
 
-  async getCandidate(id: string) {
-    return await this.service.findById(id);
+  async getCandidate(id: string, session?: ClientSession) {
+    return await this.service.findById(id, session);
   }
 
   async getAllCandidates() {
@@ -103,7 +104,16 @@ export class CandidateController {
       throw new Error("Failed to update question");
     }
   }
+
   async deleteInterviewQuestion(questionId: string, meta: AuditMeta) {
     return await this.service.deleteInterViewQuestion(questionId, meta);
+  }
+
+  async assignInterviewSlot(
+    candidateId: string,
+    slotId: string,
+    session?: ClientSession
+  ) {
+    return await this.service.assignInterviewSlot(candidateId, slotId, session);
   }
 }
