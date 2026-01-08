@@ -37,4 +37,11 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   )
   .delete("/:id", async ({ params, meta }) => {
     return await candidateController.deleteCandidate(params.id, meta);
-  });
+  })
+
+  //Interview Slot
+  .post(":candidateId/interview-slot", () => {})
+  .patch(":candidateId/interview-slot", () => {})
+  .delete(":candidateId/interview-slot", () => {})
+
+

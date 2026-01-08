@@ -22,9 +22,6 @@ export const InterviewSlotModel = {
     createdAt: t.Date(),
     updatedAt: t.Nullable(t.Date()),
   }),
-  addCandidateBody: t.Object({
-    candidateId: t.String({ minLength: 24, maxLength: 24 }),
-  }),
 };
 export type InterviewSlot = typeof InterviewSlotModel.slot.static;
 

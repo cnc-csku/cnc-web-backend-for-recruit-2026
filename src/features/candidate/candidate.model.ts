@@ -99,6 +99,17 @@ export const CandidateModel = {
     expected: t.String(),
     tools: t.String(),
   }),
+  assignSlotBody: t.Object({
+    slotId: t.String({ minLength: 24, maxLength: 24 }),
+  }),
+
+  unassignSlotBody: t.Object({
+    slotId: t.String({ minLength: 24, maxLength: 24 }),
+  }),
+
+  changeSlotBody: t.Object({
+    newSlotId: t.String({ minLength: 24, maxLength: 24 }),
+  }),
 };
 
 export type Candidate = typeof CandidateModel.candidate.static;
