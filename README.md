@@ -12,4 +12,11 @@ To start the development server run:
 bun run dev
 ```
 
+## Env
+This project DB is mongoDB in order to do transaction to avoid race condition need to enable replicas set using this exact URI
+
+```bash
+MONGO_URI=mongodb://localhost:27017?replicaSet=rs0
+```
+
 Open http://localhost:3000/ with your browser to see the result.
