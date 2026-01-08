@@ -7,7 +7,7 @@ export const PaginationModal = {
   }),
   paginationResponse: t.Object({
     data: t.Array(t.Any()),
-    meta: t.Object({
+    pagination: t.Object({
       page: t.Number(),
       limit: t.Number(),
       total: t.Number(),

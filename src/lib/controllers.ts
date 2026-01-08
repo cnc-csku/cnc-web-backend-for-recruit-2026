@@ -6,6 +6,8 @@ import { FormController } from "../features/form/form.controller";
 import { FormService } from "../features/form/form.service";
 import { InterviewQuestionController } from "../features/interviewQuestion/interviewQuestion.controller";
 import { InterviewQuestionService } from "../features/interviewQuestion/interviewQuestion.service";
+import { InterviewSlotController } from "../features/InterviewSlot/interviewSlot.controller";
+import { InterviewSlotService } from "../features/InterviewSlot/interviewSlot.service";
 
 const auditLogService = new AuditLogService();
 const auditLogController = new AuditLogController(auditLogService);
@@ -28,9 +30,18 @@ const candidateService = new CandidateService(
 );
 const candidateController = new CandidateController(candidateService);
 
+const interviewSlotService = new InterviewSlotService(
+  auditLogController,
+  candidateController
+);
+const interviewSlotController = new InterviewSlotController(
+  interviewSlotService
+);
+
 export {
   formController,
   interviewQuestionController,
   candidateController,
+  interviewSlotController,
   auditLogController,
 };

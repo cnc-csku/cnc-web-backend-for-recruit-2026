@@ -62,3 +62,69 @@ export class ScheduleNotFoundError extends DomainError {
     super(message);
   }
 }
+
+export class InterviewSlotNotFoundError extends DomainError {
+  statusCode = 404;
+  code = "SLOT_NOTFOUND";
+  constructor(message = "Interview Slot not found") {
+    super(message);
+  }
+}
+
+export class InterviewSlotFullError extends DomainError {
+  statusCode = 403;
+  code = "SLOT_FULL";
+  constructor(message = "Interview slot is full") {
+    super(message);
+  }
+}
+
+export class InterviewSlotUnavailableError extends DomainError {
+  statusCode = 403;
+  code = "SLOT_UNVAILABLE";
+  constructor(message = "Interview slot is unavailable") {
+    super(message);
+  }
+}
+
+export class AlreadyHasSlotError extends DomainError {
+  statusCode = 403;
+  code = "CANDIDATE_ALREADY_HAS_SLOT";
+  constructor(message = "Candidate already has a slot") {
+    super(message);
+  }
+}
+
+export class HasNoSlotError extends DomainError {
+  statusCode = 403;
+  code = "CANDIDATE_HAS_NO_SLOT";
+  constructor(message = "Candidate has no slot") {
+    super(message);
+  }
+}
+
+export class NotInSlotError extends DomainError {
+  statusCode = 403;
+  code = "NOT_IN_SLOT";
+  constructor(message = "Candidate not in slot") {
+    super(message);
+  }
+}
+
+export class SlotTimeOverlapError extends DomainError {
+  statusCode = 403;
+  code = "SLOT_TIME_OVERLAP";
+  constructor(
+    message = "Interview slot with this time is overlap with other slot"
+  ) {
+    super(message);
+  }
+}
+
+export class BadTimeSlotError extends DomainError {
+  statusCode = 403;
+  code = "BAD_TIME_SLOT";
+  constructor(message = "Start time must be before end time") {
+    super(message);
+  }
+}

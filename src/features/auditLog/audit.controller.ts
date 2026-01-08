@@ -26,7 +26,7 @@ export class AuditLogController {
     const { data, total } = await this.service.getAll(query);
     return {
       data,
-      meta: {
+      pagination: {
         page,
         limit,
         total,

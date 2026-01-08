@@ -1,8 +1,7 @@
 import { t } from "elysia";
 import { db } from "../../core/db";
-import {
-  type InterViewQuestion,
-} from "../interviewQuestion/interviewQuestion.model";
+import { type InterViewQuestion } from "../interviewQuestion/interviewQuestion.model";
+import { WithId } from "mongodb";
 
 export const ReferralSource = t.Union([
   t.Literal("SENIOR"),
@@ -48,6 +47,8 @@ export const CandidateModel = {
     socialContact: t.String(),
     github: t.String(),
 
+    interviewSlotId: t.Optional(t.String()),
+
     //questions answer
     referralSource: ReferralSource,
     projectExperience: t.String(),
@@ -74,11 +75,10 @@ export const CandidateModel = {
     bio: t.String(),
     typeOfDpm: TypeOfDPM,
     nisitYearParticipated: NisitYearParticipated,
-    gradeGPAX: t.Number({
-      minimum: 0,
-      maximum: 4,
-      multipleOf: 0.01,
-    }),
+    gradeGPAX: t
+      .Transform(t.String())
+      .Decode((val) => parseFloat(val))
+      .Encode((val) => val.toFixed(2)),
     profileImagePath: t.String(),
     transcriptPath: t.String(),
     address: t.String(),
@@ -87,6 +87,8 @@ export const CandidateModel = {
 
     socialContact: t.String(),
     github: t.String(),
+
+    interviewSlotId: t.Optional(t.String()),
 
     //questions answer
     referralSource: ReferralSource,
@@ -98,10 +100,21 @@ export const CandidateModel = {
     expected: t.String(),
     tools: t.String(),
   }),
+  assignSlotBody: t.Object({
+    slotId: t.String({ minLength: 24, maxLength: 24 }),
+  }),
+
+  unassignSlotBody: t.Object({
+    slotId: t.String({ minLength: 24, maxLength: 24 }),
+  }),
+
+  changeSlotBody: t.Object({
+    newSlotId: t.String({ minLength: 24, maxLength: 24 }),
+  }),
 };
 
 export type Candidate = typeof CandidateModel.candidate.static;
-export type CandidateWithInterviewQuestions = Candidate & {
+export type CandidateWithInterviewQuestions = WithId<Candidate> & {
   interviewQuestions: InterViewQuestion[];
 };
 

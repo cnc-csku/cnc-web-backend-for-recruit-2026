@@ -10,7 +10,11 @@ export const AuditActions = t.UnionEnum([
   "DELETE_QUESTION",
   "UPDATE_FORM_SCHEDULE",
   "SET_FORM_ALLOW_SUBMIT",
-  "LOGIN",
+  "ADD_INTERVIEW_SLOT",
+  "DELETE_INTERVIEW_SLOT",
+  "ADD_CANDIDATE_TO_INTERVIEW_SLOT",
+  "REMOVE_CANDIDATE_FROM_INTERVIEW_SLOT",
+  "CHANGE_INTERVIEW_SLOT",
 ]);
 
 export const AuditTargets = t.UnionEnum([
@@ -18,6 +22,7 @@ export const AuditTargets = t.UnionEnum([
   "INTERVIEW_QUESTION",
   "FORM",
   "LOGIN",
+  "INTERVIEW_SLOT"
 ]);
 
 export const AuditLogModel = {
