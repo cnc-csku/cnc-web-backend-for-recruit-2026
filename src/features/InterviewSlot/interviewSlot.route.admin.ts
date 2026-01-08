@@ -6,6 +6,9 @@ import { InterviewSlotModel } from "./InterviewSlot.model";
 export const interviewSlotAdminRoute = new Elysia({ prefix: "/interview-slot" })
   .use(auditPlugin)
   .decorate("interviewSlotController", interviewSlotController)
+  .get("/", async ({ interviewSlotController, ip }) => {
+    return await interviewSlotController.getAllSlot(true);
+  })
   .post(
     "/",
     async ({ interviewSlotController, body, meta }) => {
@@ -15,9 +18,6 @@ export const interviewSlotAdminRoute = new Elysia({ prefix: "/interview-slot" })
       body: InterviewSlotModel.createSlotBody,
     }
   )
-  .delete(
-    "/:slotId",
-    async ({ interviewSlotController, params, meta }) => {
-      return await interviewSlotController.deleteSlot(params.slotId, meta);
-    }
-  );
+  .delete("/:slotId", async ({ interviewSlotController, params, meta }) => {
+    return await interviewSlotController.deleteSlot(params.slotId, meta);
+  });

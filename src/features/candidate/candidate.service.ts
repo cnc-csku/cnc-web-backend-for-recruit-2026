@@ -44,10 +44,9 @@ export class CandidateService {
     session?: ClientSession
   ): Promise<CandidateWithInterviewQuestions> {
     const _id = new ObjectId(id);
-    const candidate = await candidatesCol.findOne(
-      { _id },
-      session ? { session } : undefined
-    );
+    const options = session ? { session } : {};
+    const candidate = await candidatesCol.findOne({ _id }, options);
+
     if (!candidate) throw new CandidateNotFoundError();
 
     const interviewQ = await this.interviewQuestionController.getByCandidateId(
@@ -107,7 +106,7 @@ export class CandidateService {
     const exist = await this.findByEmail(data.email);
     if (exist) throw new DuplicateCandidateError();
     const { interviewSlotId, ...rest } = data;
-    
+
     const candidate: Candidate = {
       ...rest,
       currentInterviewRoom: null,
@@ -229,7 +228,7 @@ export class CandidateService {
     }
   }
 
-  async unassignInterviewSlot(candidateId: string, session?: ClientSession) {
+  async unAssignInterviewSlot(candidateId: string, session?: ClientSession) {
     const candidateIdObj = new ObjectId(candidateId);
 
     const result = await candidatesCol.updateOne(

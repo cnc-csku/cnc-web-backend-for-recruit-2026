@@ -1,6 +1,7 @@
 import { t } from "elysia";
 import { db } from "../../core/db";
 import { type InterViewQuestion } from "../interviewQuestion/interviewQuestion.model";
+import { WithId } from "mongodb";
 
 export const ReferralSource = t.Union([
   t.Literal("SENIOR"),
@@ -113,7 +114,7 @@ export const CandidateModel = {
 };
 
 export type Candidate = typeof CandidateModel.candidate.static;
-export type CandidateWithInterviewQuestions = Candidate & {
+export type CandidateWithInterviewQuestions = WithId<Candidate> & {
   interviewQuestions: InterViewQuestion[];
 };
 

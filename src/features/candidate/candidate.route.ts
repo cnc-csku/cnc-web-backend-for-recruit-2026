@@ -1,6 +1,9 @@
 import { Elysia } from "elysia";
 import { CandidateModel } from "./candidate.model";
-import { candidateController } from "../../lib/controllers";
+import {
+  candidateController,
+  interviewSlotController,
+} from "../../lib/controllers";
 import { ip } from "elysia-ip";
 import { auditPlugin } from "../auditLog/audit.plugin";
 //TODO: get profile from auth
@@ -9,8 +12,9 @@ import { auditPlugin } from "../auditLog/audit.plugin";
 export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .use(auditPlugin)
   .decorate("candidateController", candidateController)
-  .get("/:id", async ({ params, candidateController }) => {
-    return await candidateController.getCandidate(params.id);
+  .decorate("interviewSlotController", interviewSlotController)
+  .get("/:candidateId", async ({ params, candidateController }) => {
+    return await candidateController.getCandidate(params.candidateId);
   })
   .put(
     "/:id",
@@ -35,13 +39,50 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       body: CandidateModel.createCandidateBody,
     }
   )
-  .delete("/:id", async ({ params, meta }) => {
-    return await candidateController.deleteCandidate(params.id, meta);
+  .delete("/:candidateId", async ({ params, meta }) => {
+    return await candidateController.deleteCandidate(params.candidateId, meta);
   })
 
   //Interview Slot
-  .post(":candidateId/interview-slot", () => {})
-  .patch(":candidateId/interview-slot", () => {})
-  .delete(":candidateId/interview-slot", () => {})
-
-
+  // Interview Slot - Assign candidate to a slot
+  .post(
+    ":candidateId/interview-slot",
+    async ({ params, body, interviewSlotController, meta }) => {
+      return await interviewSlotController.assignCandidateToSlot(
+        params.candidateId,
+        body.slotId,
+        meta
+      );
+    },
+    {
+      body: CandidateModel.assignSlotBody,
+    }
+  )
+  // Interview Slot - Change selected slot
+  .patch(
+    ":candidateId/interview-slot",
+    async ({ params, body, interviewSlotController, meta }) => {
+      return await interviewSlotController.changeCandidateAssignedSlot(
+        params.candidateId,
+        body.slotId,
+        meta
+      );
+    },
+    {
+      body: CandidateModel.assignSlotBody,
+    }
+  )
+  // Interview Slot - Unassign candidate from a slot
+  .delete(
+    ":candidateId/interview-slot",
+    async ({ params, body, interviewSlotController, meta }) => {
+      return await interviewSlotController.unAssignCandidateFromSlot(
+        params.candidateId,
+        body.slotId,
+        meta
+      );
+    },
+    {
+      body: CandidateModel.unassignSlotBody,
+    }
+  );

@@ -14,6 +14,7 @@ export const AuditActions = t.UnionEnum([
   "DELETE_INTERVIEW_SLOT",
   "ADD_CANDIDATE_TO_INTERVIEW_SLOT",
   "REMOVE_CANDIDATE_FROM_INTERVIEW_SLOT",
+  "CHANGE_INTERVIEW_SLOT",
 ]);
 
 export const AuditTargets = t.UnionEnum([
