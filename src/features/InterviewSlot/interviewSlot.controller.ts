@@ -1,6 +1,6 @@
 import { DomainError } from "../../core/errors";
 import { AuditMeta } from "../auditLog/audit.model";
-import { CreateInterviewSlotBody } from "./InterviewSlot.model";
+import { CreateInterviewSlotBody } from "./interviewSlot.model";
 import { InterviewSlotService } from "./interviewSlot.service";
 
 export class InterviewSlotController {

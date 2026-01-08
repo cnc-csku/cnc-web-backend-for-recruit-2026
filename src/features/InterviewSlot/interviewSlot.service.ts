@@ -2,8 +2,7 @@ import { ClientSession, ObjectId } from "mongodb";
 import {
   CreateInterviewSlotBody,
   interviewSlotCol,
-  InterviewSlotStatus,
-} from "./InterviewSlot.model";
+} from "./interviewSlot.model";
 import {
   AlreadyHasSlotError,
   BadTimeSlotError,
