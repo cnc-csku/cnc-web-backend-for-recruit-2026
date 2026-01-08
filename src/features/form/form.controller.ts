@@ -17,7 +17,15 @@ export class FormController {
     return await this.service.setFormSchedule(openTime, closeTime, meta);
   }
 
+  async setEditableUntil(until: Date, meta: AuditMeta) {
+    return await this.service.setEditableUntil(until, meta);
+  }
+
   async assertSubmissionAllowed() {
     await this.service.assertSubmissionAllowed();
+  }
+
+  async assertEditAllowed() {
+    await this.service.assertEditAllowed();
   }
 }

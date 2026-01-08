@@ -2,6 +2,7 @@ import {
   FormConfigError,
   ScheduleNotFoundError,
   SubmissionDisabledError,
+  SubmissionEditForbiddenError,
   SubmissionWindowClosedError,
 } from "../../core/errors";
 import { AuditLogController } from "../auditLog/audit.controller";
@@ -19,6 +20,7 @@ export class FormService {
       allowSubmit: result.allowSubmit,
       opensAt: result.opensAt,
       closesAt: result.closesAt,
+      editableUntil: result.editableUntil,
     };
   }
 
@@ -86,6 +88,37 @@ export class FormService {
     return result;
   }
 
+  async setEditableUntil(until: Date, meta: AuditMeta) {
+    const before = await formCol.findOne({ _id: "FORM_CONFIG" });
+    if (!before) throw new ScheduleNotFoundError();
+
+    const result = await formCol.findOneAndUpdate(
+      { _id: "FORM_CONFIG" },
+      {
+        $set: {
+          editableUntil: until,
+        },
+      },
+      { returnDocument: "after" }
+    );
+    if (!result) throw new ScheduleNotFoundError();
+
+    const changes = AuditUtils.calculateDiff(before, result);
+    this.auditController.audit({
+      ...meta,
+      action: "UPDATE_FORM_SCHEDULE",
+      changes: {
+        before: changes.before,
+        after: changes.after,
+      },
+      target: {
+        type: "FORM",
+        id: result._id.toString(),
+      },
+    });
+    return result;
+  }
+
   async assertSubmissionAllowed() {
     const config = await formCol.findOne({ _id: "FORM_CONFIG" });
     if (!config) throw new FormConfigError();
@@ -94,6 +127,17 @@ export class FormService {
 
     if (now < config.opensAt || now > config.closesAt) {
       throw new SubmissionWindowClosedError();
+    }
+  }
+
+  async assertEditAllowed() {
+    const config = await formCol.findOne({ _id: "FORM_CONFIG" });
+    if (!config) throw new FormConfigError();
+    if (!config.editableUntil) throw new SubmissionEditForbiddenError();
+    const now = new Date();
+    
+    if (now > config.editableUntil) {
+      throw new SubmissionEditForbiddenError();
     }
   }
 }

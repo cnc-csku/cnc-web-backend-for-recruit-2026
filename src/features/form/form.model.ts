@@ -7,6 +7,7 @@ export const FormModel = {
     allowSubmit: t.Boolean(),
     opensAt: t.Date(),
     closesAt: t.Date(),
+    editableUntil: t.Date(),
   }),
   scheduleBody: t.Object({
     opensAt: t.Date(),
@@ -14,6 +15,9 @@ export const FormModel = {
   }),
   allowSubmitBody: t.Object({
     allowSubmit: t.Boolean(),
+  }),
+  editableBody: t.Object({
+    editableUntil: t.Date(),
   }),
 };
 export type Form = typeof FormModel.form.static;

@@ -25,4 +25,13 @@ export const formAdminRoute = new Elysia({ prefix: "/form" })
     {
       body: FormModel.allowSubmitBody,
     }
+  )
+  .patch(
+    "/set-editable",
+    async ({ formController, body, meta }) => {
+      return await formController.setEditableUntil(body.editableUntil, meta);
+    },
+    {
+      body: FormModel.editableBody,
+    }
   );

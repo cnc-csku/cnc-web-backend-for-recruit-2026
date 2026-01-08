@@ -24,8 +24,8 @@ export const app = new Elysia()
     }
   })
   .use(ip())  
-  .use(authRoute)
+  // .use(authRoute)
   .use(adminRoute)
   .use(candidateRoute)
   .use(formRoute)
-  .listen(4000);
+  .listen(3000);

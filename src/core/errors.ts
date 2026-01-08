@@ -47,6 +47,14 @@ export class SubmissionDisabledError extends DomainError {
   }
 }
 
+export class SubmissionEditForbiddenError extends DomainError {
+  statusCode = 403;
+  code = "SUBMISSION_EDIT_FORBIDDEN";
+  constructor(message = "Submission edit is not allow") {
+    super(message);
+  }
+}
+
 export class SubmissionWindowClosedError extends DomainError {
   statusCode = 403;
   code = "SUBMISSION_WINDOW_CLOSE";

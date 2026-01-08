@@ -21,7 +21,7 @@ import { AuditMeta } from "../auditLog/audit.model";
 import { buildProjection } from "../../utils/buildProjection";
 import { AuditUtils } from "../auditLog/audit.utils";
 
-const MAX_EDIT_ALLOW = 2;
+const MAX_EDIT_ALLOW = 99999;
 
 export class CandidateService {
   constructor(
@@ -61,6 +61,7 @@ export class CandidateService {
     isAdmin: boolean = false,
     meta: AuditMeta
   ) {
+    if (!isAdmin) await this.formController.assertEditAllowed();
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
     if (exist.editCount >= MAX_EDIT_ALLOW && !isAdmin)
@@ -229,6 +230,7 @@ export class CandidateService {
   }
 
   async unAssignInterviewSlot(candidateId: string, session?: ClientSession) {
+    await this.formController.assertEditAllowed();
     const candidateIdObj = new ObjectId(candidateId);
 
     const result = await candidatesCol.updateOne(
