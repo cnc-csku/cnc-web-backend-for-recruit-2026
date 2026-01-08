@@ -106,9 +106,10 @@ export class CandidateService {
 
     const exist = await this.findByEmail(data.email);
     if (exist) throw new DuplicateCandidateError();
-
+    const { interviewSlotId, ...rest } = data;
+    
     const candidate: Candidate = {
-      ...data,
+      ...rest,
       currentInterviewRoom: null,
       editCount: 0,
       createdAt: new Date(),

@@ -15,11 +15,6 @@ const auditLogController = new AuditLogController(auditLogService);
 const formService = new FormService(auditLogController);
 const formController = new FormController(formService);
 
-const interviewSlotService = new InterviewSlotService(auditLogController);
-const interviewSlotController = new InterviewSlotController(
-  interviewSlotService
-);
-
 const interviewQuestionServive = new InterviewQuestionService(
   auditLogController
 );
@@ -34,6 +29,14 @@ const candidateService = new CandidateService(
   auditLogController
 );
 const candidateController = new CandidateController(candidateService);
+
+const interviewSlotService = new InterviewSlotService(
+  auditLogController,
+  candidateController
+);
+const interviewSlotController = new InterviewSlotController(
+  interviewSlotService
+);
 
 export {
   formController,

@@ -6,6 +6,7 @@ import { bootstrapFormConfig } from "./core/bootstrap";
 import { formRoute } from "./features/form/form.route";
 import { ip } from "elysia-ip";
 import { interviewSlotRoute } from "./features/InterviewSlot/interviewSlot.route";
+import { auditPlugin } from "./features/auditLog/audit.plugin";
 
 await bootstrapFormConfig();
 export const app = new Elysia()
@@ -21,6 +22,7 @@ export const app = new Elysia()
       console.error(error);
     }
   })
+  .use(ip())  
   .use(adminRoute)
   .use(candidateRoute)
   .use(formRoute)

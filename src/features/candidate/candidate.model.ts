@@ -46,7 +46,7 @@ export const CandidateModel = {
     socialContact: t.String(),
     github: t.String(),
 
-    interviewSlotId: t.Nullable(t.String()),
+    interviewSlotId: t.Optional(t.String()),
 
     //questions answer
     referralSource: ReferralSource,
@@ -87,7 +87,7 @@ export const CandidateModel = {
     socialContact: t.String(),
     github: t.String(),
 
-    interviewSlotId: t.Nullable(t.String()),
+    interviewSlotId: t.Optional(t.String()),
 
     //questions answer
     referralSource: ReferralSource,

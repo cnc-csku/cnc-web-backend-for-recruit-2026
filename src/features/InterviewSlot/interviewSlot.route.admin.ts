@@ -8,13 +8,16 @@ export const interviewSlotAdminRoute = new Elysia({ prefix: "/interview-slot" })
   .decorate("interviewSlotController", interviewSlotController)
   .post(
     "/",
-    async ({ interviewSlotController, body }) => {
-      return await interviewSlotController.createSlot(body);
+    async ({ interviewSlotController, body, meta }) => {
+      return await interviewSlotController.createSlot(body, meta);
     },
     {
       body: InterviewSlotModel.createSlotBody,
     }
   )
-  .delete("/:slotId", async ({ interviewSlotController, body, params }) => {
-    return await interviewSlotController.deleteSlot(params.slotId);
-  });
+  .delete(
+    "/:slotId",
+    async ({ interviewSlotController, params, meta }) => {
+      return await interviewSlotController.deleteSlot(params.slotId, meta);
+    }
+  );

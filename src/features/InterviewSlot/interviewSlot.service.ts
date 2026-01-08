@@ -112,6 +112,7 @@ export class InterviewSlotService {
           candidateId,
           session
         );
+
         if (candidate.interviewSlotId) throw new AlreadyHasSlotError();
 
         const slotBefore = await interviewSlotCol.findOne(

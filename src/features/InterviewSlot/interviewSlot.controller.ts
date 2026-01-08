@@ -1,4 +1,5 @@
 import { DomainError } from "../../core/errors";
+import { AuditMeta } from "../auditLog/audit.model";
 import { CreateInterviewSlotBody } from "./InterviewSlot.model";
 import { InterviewSlotService } from "./interviewSlot.service";
 
@@ -9,17 +10,21 @@ export class InterviewSlotController {
     return result;
   }
 
-  async createSlot(data: CreateInterviewSlotBody) {
-    return await this.service.createSlot(data);
+  async createSlot(data: CreateInterviewSlotBody, meta: AuditMeta) {
+    return await this.service.createSlot(data,meta);
   }
 
-  async deleteSlot(slotId: string) {
-    return await this.service.deleteById(slotId);
+  async deleteSlot(slotId: string, meta: AuditMeta) {
+    return await this.service.deleteById(slotId,meta);
   }
 
-  async addCandidateToSlot(candidateId: string, slotId: string) {
+  async addCandidateToSlot(
+    candidateId: string,
+    slotId: string,
+    meta: AuditMeta
+  ) {
     try {
-      return await this.service.addCandidateToSlot(candidateId, slotId);
+      return await this.service.addCandidateToSlot(candidateId, slotId,meta);
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
@@ -30,9 +35,13 @@ export class InterviewSlotController {
     }
   }
 
-  async removeCandidateFromSlot(candidateId: string, slotId: string) {
+  async removeCandidateFromSlot(
+    candidateId: string,
+    slotId: string,
+    meta: AuditMeta
+  ) {
     try {
-      return await this.service.removeCandidateFromSlot(candidateId, slotId);
+      return await this.service.removeCandidateFromSlot(candidateId, slotId,meta);
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;

@@ -10,6 +10,6 @@ export const auditPlugin = new Elysia({ name: "meta" })
         userId: "placeHolder",
         email: "placeHolder",
       },
-      ip,
+      ip: ip,
     },
   }));
