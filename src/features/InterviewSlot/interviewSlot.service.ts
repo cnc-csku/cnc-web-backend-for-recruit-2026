@@ -5,6 +5,7 @@ import {
 } from "./interviewSlot.model";
 import {
   AlreadyHasSlotError,
+  AlreadyWithdrawnError,
   BadTimeSlotError,
   CandidateNotFoundError,
   HasNoSlotError,
@@ -115,6 +116,8 @@ export class InterviewSlotService {
       candidateId,
       session
     );
+    if (candidate.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
 
     if (candidate.interviewSlotId) throw new AlreadyHasSlotError();
 

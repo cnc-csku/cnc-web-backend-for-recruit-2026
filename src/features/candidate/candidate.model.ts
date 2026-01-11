@@ -22,6 +22,17 @@ export const NisitYearParticipated = t.Union([
   t.Literal(85),
 ]);
 
+export const ApplicationStatus = t.Union([
+  t.Literal("ACTIVE"),
+  t.Literal("WITHDRAWN"),
+]);
+
+export const InterviewStatus = t.Union([
+  t.Literal("PENDING"),
+  t.Literal("PASSED"),
+  t.Literal("FAILED"),
+]);
+
 export const CandidateModel = {
   candidate: t.Object({
     userId: t.String({ minLength: 1 }),
@@ -60,6 +71,8 @@ export const CandidateModel = {
     tools: t.String(),
 
     currentInterviewRoom: t.Nullable(InterviewRoom),
+    applicationStatus: ApplicationStatus,
+    interviewStatus: InterviewStatus,
     editCount: t.Number(),
     createdAt: t.Date(),
     updatedAt: t.Nullable(t.Date()),

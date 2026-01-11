@@ -117,10 +117,12 @@ export class CandidateController {
     return await this.service.assignInterviewSlot(candidateId, slotId, session);
   }
 
-  async unAssignInterviewSlot(
-    candidateId: string,
-    session?: ClientSession
-  ) {
+  async unAssignInterviewSlot(candidateId: string, session?: ClientSession) {
     return await this.service.unAssignInterviewSlot(candidateId, session);
+  }
+
+  // set status to withDraw and unbind from account
+  async markWithdrawn(candidateId: string, session?: ClientSession) {
+    return await this.service.markWithdrawn(candidateId);
   }
 }

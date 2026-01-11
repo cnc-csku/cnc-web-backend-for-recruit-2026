@@ -136,3 +136,11 @@ export class BadTimeSlotError extends DomainError {
     super(message);
   }
 }
+
+export class AlreadyWithdrawnError extends DomainError {
+  statusCode = 403;
+  code = "ALREADY_WITHDRAW";
+  constructor(message = "Candidate already withdrawn") {
+    super(message);
+  }
+}

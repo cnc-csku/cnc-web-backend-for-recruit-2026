@@ -7,6 +7,7 @@ import {
 import { db } from "../../core/db";
 import {
   AlreadyHasSlotError,
+  AlreadyWithdrawnError,
   CandidateNotFoundError,
   DuplicateCandidateError,
   EditLimitExceededError,
@@ -20,6 +21,7 @@ import { AuditLogController } from "../auditLog/audit.controller";
 import { AuditMeta } from "../auditLog/audit.model";
 import { buildProjection } from "../../utils/buildProjection";
 import { AuditUtils } from "../auditLog/audit.utils";
+import { InterviewSlotController } from "../InterviewSlot/interviewSlot.controller";
 
 const MAX_EDIT_ALLOW = 99999;
 
@@ -67,6 +69,9 @@ export class CandidateService {
     if (exist.editCount >= MAX_EDIT_ALLOW && !isAdmin)
       throw new EditLimitExceededError();
 
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
+
     const _id = new ObjectId(candidateId);
 
     const before = await candidatesCol.findOne({ _id });
@@ -111,6 +116,8 @@ export class CandidateService {
     const candidate: Candidate = {
       ...rest,
       currentInterviewRoom: null,
+      applicationStatus: "ACTIVE",
+      interviewStatus: "PENDING",
       editCount: 0,
       createdAt: new Date(),
       updatedAt: null,
@@ -246,6 +253,20 @@ export class CandidateService {
 
     if (result.matchedCount === 0) {
       throw new HasNoSlotError();
+    }
+  }
+
+  async markWithdrawn(candidateId: string, session?: ClientSession) {
+    const _id = new ObjectId(candidateId);
+
+    const result = await candidatesCol.updateOne(
+      { _id, applicationStatus: { $ne: "WITHDRAWN" } },
+      { $set: { applicationStatus: "WITHDRAWN", userId: "", email: "" } },
+      session ? { session } : undefined
+    );
+
+    if (result.matchedCount === 0) {
+      throw new Error("Already withdrawn");
     }
   }
 }

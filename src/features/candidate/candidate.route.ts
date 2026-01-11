@@ -2,10 +2,12 @@ import { Elysia } from "elysia";
 import { CandidateModel } from "./candidate.model";
 import {
   candidateController,
+  candidateWithdrawalService,
   interviewSlotController,
 } from "../../lib/controllers";
 import { ip } from "elysia-ip";
 import { auditPlugin } from "../auditLog/audit.plugin";
+
 //TODO: get profile from auth
 //TODO: Middleware rate limit
 
@@ -13,6 +15,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .use(auditPlugin)
   .decorate("candidateController", candidateController)
   .decorate("interviewSlotController", interviewSlotController)
+  .decorate("candidateWithdrawalService", candidateWithdrawalService)
   .get("/:candidateId", async ({ params, candidateController }) => {
     return await candidateController.getCandidate(params.candidateId);
   })
@@ -42,6 +45,15 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .delete("/:candidateId", async ({ params, meta }) => {
     return await candidateController.deleteCandidate(params.candidateId, meta);
   })
+  .post(
+    ":candidateId/withdraw",
+    async ({ params, body, candidateWithdrawalService, meta }) => {
+      return await candidateWithdrawalService.withdraw(
+        params.candidateId,
+        meta
+      );
+    }
+  )
 
   //Interview Slot
   // Interview Slot - Assign candidate to a slot
