@@ -3,8 +3,8 @@ import {
   type Candidate,
   candidatesCol,
   CandidateWithInterviewQuestions,
+  InterviewStatusStatic,
 } from "./candidate.model";
-import { db } from "../../core/db";
 import {
   AlreadyHasSlotError,
   AlreadyWithdrawnError,
@@ -84,6 +84,47 @@ export class CandidateService {
         $inc: {
           editCount: isAdmin ? 0 : 1,
         },
+      },
+      { returnDocument: "after" }
+    );
+    if (!result) return null;
+
+    const changes = AuditUtils.calculateDiff(before, result);
+
+    this.auditController.audit({
+      ...meta,
+      action: "EDIT_CANDIDATE",
+      changes: {
+        before: changes.before,
+        after: changes.after,
+      },
+      target: {
+        type: "CANDIDATE",
+        id: candidateId,
+      },
+    });
+    return result;
+  }
+
+  async updateInterviewStatus(
+    candidateId: string,
+    status: InterviewStatusStatic,
+    meta: AuditMeta
+  ) {
+    const exist = await this.findById(candidateId);
+    if (!exist) throw new CandidateNotFoundError();
+
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
+
+    const _id = new ObjectId(candidateId);
+
+    const before = await candidatesCol.findOne({ _id });
+
+    const result = await candidatesCol.findOneAndUpdate(
+      { _id },
+      {
+        $set: { interviewStatus: status, updatedAt: new Date() },
       },
       { returnDocument: "after" }
     );

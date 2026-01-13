@@ -16,6 +16,7 @@ export const InterviewRoom = t.Union([
 ]);
 
 export const TypeOfDPM = t.Union([t.Literal("NORMAL"), t.Literal("SPECIAL")]);
+
 export const NisitYearParticipated = t.Union([
   t.Literal(83),
   t.Literal(84),
@@ -32,6 +33,8 @@ export const InterviewStatus = t.Union([
   t.Literal("PASSED"),
   t.Literal("FAILED"),
 ]);
+
+export type InterviewStatusStatic = typeof InterviewStatus.static;
 
 export const CandidateModel = {
   candidate: t.Object({

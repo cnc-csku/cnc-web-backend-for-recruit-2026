@@ -1,5 +1,5 @@
-import { Elysia } from "elysia";
-import { CandidateModel } from "./candidate.model";
+import { Elysia, t } from "elysia";
+import { CandidateModel, InterviewStatus } from "./candidate.model";
 import { InterviewQuestionModel } from "../interviewQuestion/interviewQuestion.model";
 import { candidateController } from "../../lib/controllers";
 import { auditPlugin } from "../auditLog/audit.plugin";
@@ -68,5 +68,20 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
         questionId,
         meta
       );
+    }
+  )
+  .patch(
+    "/:id/interview-status",
+    async ({ params, body, candidateController, meta }) => {
+      return await candidateController.updateCandidateInterviewStatus(
+        params.id,
+        body.interviewStatus,
+        meta
+      );
+    },
+    {
+      body: t.Object({
+        interviewStatus: InterviewStatus,
+      }),
     }
   );

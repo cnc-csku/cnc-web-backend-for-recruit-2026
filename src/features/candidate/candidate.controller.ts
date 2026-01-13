@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { CandidateService } from "./candidate.service";
-import { CreateCandidateBody } from "./candidate.model";
+import { CreateCandidateBody, InterviewStatusStatic } from "./candidate.model";
 import {
   CandidateNotFoundError,
   DomainError,
@@ -33,6 +33,25 @@ export class CandidateController {
         candidateId,
         data,
         isAdmin,
+        meta
+      );
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to update candidate");
+    }
+  }
+
+  async updateCandidateInterviewStatus(
+    candidateId: string,
+    status: InterviewStatusStatic,
+    meta: AuditMeta
+  ) {
+    try {
+      return await this.service.updateInterviewStatus(
+        candidateId,
+        status,
         meta
       );
     } catch (err) {
