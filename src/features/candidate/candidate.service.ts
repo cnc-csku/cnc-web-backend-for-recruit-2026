@@ -222,6 +222,9 @@ export class CandidateService {
   ) {
     const exist = await this.findById(id);
     if (!exist) throw new CandidateNotFoundError();
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
+
     const result =
       await this.interviewQuestionController.createInterViewQuestion(
         id,
@@ -239,6 +242,8 @@ export class CandidateService {
   ) {
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
 
     return await this.interviewQuestionController.updateInterViewQuestion(
       questionid,
