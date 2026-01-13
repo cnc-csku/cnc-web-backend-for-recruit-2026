@@ -85,6 +85,7 @@ export class InterviewQuestionService {
       questionTitle: data.questionTitle,
       answer: data.answer,
       score: data.score,
+      interviewRoom: data.interviewRoom,
       updatedAt: new Date(),
     };
 

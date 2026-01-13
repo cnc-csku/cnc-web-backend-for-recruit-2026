@@ -1,5 +1,6 @@
 import { t } from "elysia";
 import { db } from "../../core/db";
+import { InterviewRoom } from "../candidate/candidate.model";
 
 export const InterviewQuestionModel = {
   interviewQuestion: t.Object({
@@ -8,6 +9,7 @@ export const InterviewQuestionModel = {
     answer: t.Optional(t.String()),
     score: t.Optional(t.Number({ minimum: 0, maximum: 10 })),
     audioFileName: t.Optional(t.String()),
+    interviewRoom: InterviewRoom,
     createAt: t.Date(),
     updatedAt: t.Nullable(t.Date()),
   }),
@@ -15,6 +17,7 @@ export const InterviewQuestionModel = {
     questionTitle: t.String(),
     answer: t.Optional(t.String()),
     score: t.Optional(t.Number({ minimum: 0, maximum: 10 })),
+    interviewRoom: InterviewRoom,
   }),
 };
 export type InterViewQuestion =
