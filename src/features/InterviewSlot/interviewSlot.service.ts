@@ -25,7 +25,7 @@ import { CandidateController } from "../candidate/candidate.controller";
 export class InterviewSlotService {
   constructor(
     private auditController: AuditLogController,
-    private candidateController: CandidateController
+    private candidateController: CandidateController,
   ) {}
 
   async getAll(isAdmin = false) {
@@ -56,7 +56,7 @@ export class InterviewSlotService {
 
     const result = await interviewSlotCol.insertOne({
       ...data,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       updatedAt: null,
     });
     if (!result) return result;
@@ -87,7 +87,7 @@ export class InterviewSlotService {
           maxCandidates: 1,
           bookedCandidateIds: 1,
         },
-      }
+      },
     );
     if (!result) return result;
 
@@ -109,12 +109,12 @@ export class InterviewSlotService {
   private async _addToSlot(
     candidateId: string,
     slotId: string,
-    session: ClientSession
+    session: ClientSession,
   ) {
     const slotObjectId = new ObjectId(slotId);
     const candidate = await this.candidateController.getCandidate(
       candidateId,
-      session
+      session,
     );
     if (candidate.applicationStatus === "WITHDRAWN")
       throw new AlreadyWithdrawnError();
@@ -123,7 +123,7 @@ export class InterviewSlotService {
 
     const slotBefore = await interviewSlotCol.findOne(
       { _id: slotObjectId },
-      { session }
+      { session },
     );
 
     if (!slotBefore) throw new InterviewSlotNotFoundError();
@@ -147,7 +147,7 @@ export class InterviewSlotService {
         $addToSet: { bookedCandidateIds: candidateId },
         $set: { status: nextStatus },
       },
-      { session, returnDocument: "after" }
+      { session, returnDocument: "after" },
     );
 
     if (!slotAfter) throw new InterviewSlotFullError();
@@ -155,7 +155,7 @@ export class InterviewSlotService {
     await this.candidateController.assignInterviewSlot(
       candidateId,
       slotId,
-      session
+      session,
     );
 
     return { slotBefore, slotAfter };
@@ -164,12 +164,12 @@ export class InterviewSlotService {
   private async _removeFromSlot(
     candidateId: string,
     slotId: string,
-    session: ClientSession
+    session: ClientSession,
   ) {
     const slotObjectId = new ObjectId(slotId);
     const candidate = await this.candidateController.getCandidate(
       candidateId,
-      session
+      session,
     );
 
     if (!candidate) throw new CandidateNotFoundError();
@@ -177,7 +177,7 @@ export class InterviewSlotService {
 
     const slotBefore = await interviewSlotCol.findOne(
       { _id: slotObjectId },
-      { session }
+      { session },
     );
 
     if (!slotBefore) throw new InterviewSlotNotFoundError();
@@ -202,7 +202,7 @@ export class InterviewSlotService {
         $pull: { bookedCandidateIds: candidateId },
         $set: { status: nextStatus },
       },
-      { session, returnDocument: "after" }
+      { session, returnDocument: "after" },
     );
 
     if (!slotAfter) {
@@ -217,7 +217,7 @@ export class InterviewSlotService {
   async addCandidateToSlot(
     candidateId: string,
     slotId: string,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     const session = (await client()).startSession();
     try {
@@ -231,7 +231,7 @@ export class InterviewSlotService {
 
       const changes = AuditUtils.calculateDiff(
         result.slotBefore,
-        result.slotAfter
+        result.slotAfter,
       );
 
       this.auditController.audit({
@@ -256,7 +256,7 @@ export class InterviewSlotService {
   async removeCandidateFromSlot(
     candidateId: string,
     slotId: string,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     const session = (await client()).startSession();
 
@@ -288,7 +288,7 @@ export class InterviewSlotService {
   async changeAssignSlot(
     candidateId: string,
     newSlotId: string,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     const session = (await client()).startSession();
 
@@ -296,14 +296,14 @@ export class InterviewSlotService {
       const result = await session.withTransaction(async () => {
         const candidate = await this.candidateController.getCandidate(
           candidateId,
-          session
+          session,
         );
         const oldSlot = candidate.interviewSlotId;
         if (!oldSlot) throw new HasNoSlotError();
         const removeBf = await this._removeFromSlot(
           candidateId,
           oldSlot,
-          session
+          session,
         );
         const addBf = await this._addToSlot(candidateId, newSlotId, session);
         return { removeBf, addBf };
@@ -322,7 +322,7 @@ export class InterviewSlotService {
         },
         changes: AuditUtils.calculateDiff(
           result.addBf.slotBefore,
-          result.addBf.slotAfter
+          result.addBf.slotAfter,
         ),
       });
 

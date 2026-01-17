@@ -13,11 +13,11 @@ export class FormController {
     return await this.service.setAllowSubmit(isAllow, meta);
   }
 
-  async setFormSchedule(openTime: Date, closeTime: Date, meta: AuditMeta) {
+  async setFormSchedule(openTime: string, closeTime: string, meta: AuditMeta) {
     return await this.service.setFormSchedule(openTime, closeTime, meta);
   }
 
-  async setEditableUntil(until: Date, meta: AuditMeta) {
+  async setEditableUntil(until: string, meta: AuditMeta) {
     return await this.service.setEditableUntil(until, meta);
   }
 

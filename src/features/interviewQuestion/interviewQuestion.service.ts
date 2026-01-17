@@ -27,7 +27,7 @@ export class InterviewQuestionService {
           answer: 1,
           score: 1,
         },
-      }
+      },
     );
     if (!result) return result;
     this.auditController.audit({
@@ -48,12 +48,12 @@ export class InterviewQuestionService {
   async createInterViewQuestion(
     candidateId: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     const payload: InterViewQuestion = {
       ...data,
       candidateId: candidateId,
-      createAt: new Date(),
+      createAt: new Date().toISOString(),
       updatedAt: null,
     };
 
@@ -78,7 +78,7 @@ export class InterviewQuestionService {
   async updateInterViewQuestion(
     questionId: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     const _id = new ObjectId(questionId);
     const payload: Omit<InterViewQuestion, "candidateId" | "createAt"> = {
@@ -86,7 +86,7 @@ export class InterviewQuestionService {
       answer: data.answer,
       score: data.score,
       interviewRoom: data.interviewRoom,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     };
 
     const before = await interviewQuestionsCol.findOne({ _id });
@@ -95,7 +95,7 @@ export class InterviewQuestionService {
       {
         $set: { ...payload },
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
     if (!result) return result;
 

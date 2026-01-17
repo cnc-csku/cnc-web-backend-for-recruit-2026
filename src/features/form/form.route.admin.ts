@@ -2,6 +2,7 @@ import Elysia from "elysia";
 import { FormModel } from "./form.model";
 import { formController } from "../../lib/controllers";
 import { auditPlugin } from "../auditLog/audit.plugin";
+import { formOpenApi } from "./form.openapi";
 
 export const formAdminRoute = new Elysia({ prefix: "/form" })
   .use(auditPlugin)
@@ -12,10 +13,10 @@ export const formAdminRoute = new Elysia({ prefix: "/form" })
       return await formController.setFormSchedule(
         body.opensAt,
         body.closesAt,
-        meta
+        meta,
       );
     },
-    { body: FormModel.scheduleBody }
+    { body: FormModel.scheduleBody, detail: formOpenApi.setFormSchedule },
   )
   .patch(
     "/set-allow-submit",
@@ -24,7 +25,8 @@ export const formAdminRoute = new Elysia({ prefix: "/form" })
     },
     {
       body: FormModel.allowSubmitBody,
-    }
+      detail: formOpenApi.setAllowSubmit,
+    },
   )
   .patch(
     "/set-editable",
@@ -33,5 +35,6 @@ export const formAdminRoute = new Elysia({ prefix: "/form" })
     },
     {
       body: FormModel.editableBody,
-    }
+      detail: formOpenApi.setEditableUntil,
+    },
   );

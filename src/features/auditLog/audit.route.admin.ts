@@ -1,8 +1,10 @@
 import Elysia from "elysia";
 import { auditLogController } from "../../lib/controllers";
 import { PaginationModal } from "../../../shared/shared.model";
+import { auditOpenApi } from "./audit.openapi";
+import { candidateOpenApi } from "../candidate/candidate.openapi";
 
-export const auditLogRoute = new Elysia({ prefix: "/audit" })
+export const auditLogAdminRoute = new Elysia({ prefix: "/audit" })
   .decorate("auditLogController", auditLogController)
   .get(
     "/",
@@ -12,5 +14,6 @@ export const auditLogRoute = new Elysia({ prefix: "/audit" })
     {
       query: PaginationModal.paginationQuery,
       response: PaginationModal.paginationResponse,
-    }
+      detail: auditOpenApi.getAll,
+    },
   );

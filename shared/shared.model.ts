@@ -1,4 +1,10 @@
 import { t } from "elysia";
+import { OpenAPIV3 } from "openapi-types";
+
+export type OpenApiDetail = Pick<
+  OpenAPIV3.OperationObject,
+  "operationId" | "summary" | "description" | "tags"
+>;
 
 export const PaginationModal = {
   paginationQuery: t.Object({

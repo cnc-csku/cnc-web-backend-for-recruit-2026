@@ -10,8 +10,8 @@ export const InterviewQuestionModel = {
     score: t.Optional(t.Number({ minimum: 0, maximum: 10 })),
     audioFileName: t.Optional(t.String()),
     interviewRoom: InterviewRoom,
-    createAt: t.Date(),
-    updatedAt: t.Nullable(t.Date()),
+    createAt: t.String({ format: "date-time" }),
+    updatedAt: t.Nullable(t.String({ format: "date-time" })),
   }),
   createInterviewQuestionBody: t.Object({
     questionTitle: t.String(),
@@ -27,5 +27,5 @@ export type CreateInterViewQuestBody =
   typeof InterviewQuestionModel.createInterviewQuestionBody.static;
 
 export const interviewQuestionsCol = (await db()).collection<InterViewQuestion>(
-  "interview_questions"
+  "interview_questions",
 );

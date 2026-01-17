@@ -3,6 +3,7 @@ import { CandidateModel, InterviewStatus } from "./candidate.model";
 import { InterviewQuestionModel } from "../interviewQuestion/interviewQuestion.model";
 import { candidateController } from "../../lib/controllers";
 import { auditPlugin } from "../auditLog/audit.plugin";
+import { candidateOpenApi } from "./candidate.openapi";
 
 //TODO: get profile from auth
 //TODO: Middleware rate limit
@@ -10,9 +11,15 @@ import { auditPlugin } from "../auditLog/audit.plugin";
 export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
   .use(auditPlugin)
   .decorate("candidateController", candidateController)
-  .get("/", async ({ candidateController }) => {
-    return await candidateController.getAllCandidates();
-  })
+  .get(
+    "/",
+    async ({ candidateController }) => {
+      return await candidateController.getAllCandidates();
+    },
+    {
+      detail: candidateOpenApi.getAllCandidates,
+    },
+  )
   .patch(
     "/:id",
     async ({ params, body, candidateController, meta }) => {
@@ -21,15 +28,24 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
         candidateId,
         body,
         true,
-        meta
+        meta,
       );
     },
-    { body: CandidateModel.createCandidateBody }
+    {
+      body: CandidateModel.createCandidateBody,
+      detail: candidateOpenApi.adminUpdateCandidate,
+    },
   )
-  .get("/:id/interview-questions", async ({ params, candidateController }) => {
-    const candidateId = params.id;
-    return await candidateController.getInterViewQuestions(candidateId);
-  })
+  .get(
+    "/:id/interview-questions",
+    async ({ params, candidateController }) => {
+      const candidateId = params.id;
+      return await candidateController.getInterViewQuestions(candidateId);
+    },
+    {
+      detail: candidateOpenApi.getInterviewQuestions,
+    },
+  )
   .post(
     "/:id/interview-questions",
     async ({ params, body, candidateController, meta }) => {
@@ -37,12 +53,13 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
       return await candidateController.addInterViewQuestion(
         candidateId,
         body,
-        meta
+        meta,
       );
     },
     {
       body: InterviewQuestionModel.createInterviewQuestionBody,
-    }
+      detail: candidateOpenApi.addInterviewQuestion,
+    },
   )
   .put(
     "/:id/interview-questions/:questionId",
@@ -53,12 +70,13 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
         candidateId,
         questionId,
         body,
-        meta
+        meta,
       );
     },
     {
       body: InterviewQuestionModel.createInterviewQuestionBody,
-    }
+      detail: candidateOpenApi.updateInterviewQuestion,
+    },
   )
   .delete(
     "/:id/interview-questions/:questionId",
@@ -66,9 +84,12 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
       const questionId = params.questionId;
       return await candidateController.deleteInterviewQuestion(
         questionId,
-        meta
+        meta,
       );
-    }
+    },
+    {
+      detail: candidateOpenApi.deleteInterviewQuestion,
+    },
   )
   .patch(
     "/:id/interview-status",
@@ -76,12 +97,13 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
       return await candidateController.updateCandidateInterviewStatus(
         params.id,
         body.interviewStatus,
-        meta
+        meta,
       );
     },
     {
       body: t.Object({
         interviewStatus: InterviewStatus,
       }),
-    }
+      detail: candidateOpenApi.updateInterviewStatus,
+    },
   );

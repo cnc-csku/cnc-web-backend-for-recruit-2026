@@ -8,12 +8,12 @@ export async function bootstrapFormConfig() {
       $setOnInsert: {
         _id: "FORM_CONFIG",
         allowSubmit: false,
-        opensAt: new Date("2099-01-01T00:00:00Z"),
-        closesAt: new Date("2099-01-02T00:00:00Z"),
-        editableUntil: new Date("2099-01-02T00:00:00Z"),
-        createdAt: new Date(),
+        opensAt: new Date("2099-01-01T00:00:00Z").toISOString(),
+        closesAt: new Date("2099-01-02T00:00:00Z").toISOString(),
+        editableUntil: new Date("2099-01-02T00:00:00Z").toISOString(),
+        createdAt: new Date().toISOString(),
       },
     },
-    { upsert: true }
+    { upsert: true },
   );
 }

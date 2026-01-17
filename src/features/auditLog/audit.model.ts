@@ -44,11 +44,11 @@ export const AuditLogModel = {
       t.Object({
         before: t.Nullable(t.Record(t.String(), t.Unknown())),
         after: t.Nullable(t.Record(t.String(), t.Unknown())),
-      })
+      }),
     ),
 
     ip: t.String(),
-    createdAt: t.Date(),
+    createdAt: t.String({ format: "date-time" }),
   }),
   auditMeta: t.Object({
     actor: t.Object({

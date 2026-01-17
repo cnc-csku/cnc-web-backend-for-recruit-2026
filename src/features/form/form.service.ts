@@ -35,7 +35,7 @@ export class FormService {
           allowSubmit: isAllow,
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
     if (!result) throw new ScheduleNotFoundError();
 
@@ -55,7 +55,7 @@ export class FormService {
     return result;
   }
 
-  async setFormSchedule(openTime: Date, closeTime: Date, meta: AuditMeta) {
+  async setFormSchedule(openTime: string, closeTime: string, meta: AuditMeta) {
     const before = await formCol.findOne({ _id: "FORM_CONFIG" });
     if (!before) throw new ScheduleNotFoundError();
 
@@ -67,7 +67,7 @@ export class FormService {
           closesAt: closeTime,
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
 
     if (!result) throw new ScheduleNotFoundError();
@@ -88,7 +88,7 @@ export class FormService {
     return result;
   }
 
-  async setEditableUntil(until: Date, meta: AuditMeta) {
+  async setEditableUntil(until: string, meta: AuditMeta) {
     const before = await formCol.findOne({ _id: "FORM_CONFIG" });
     if (!before) throw new ScheduleNotFoundError();
 
@@ -99,7 +99,7 @@ export class FormService {
           editableUntil: until,
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
     if (!result) throw new ScheduleNotFoundError();
 
@@ -125,7 +125,7 @@ export class FormService {
     if (!config.allowSubmit) throw new SubmissionDisabledError();
     const now = new Date();
 
-    if (now < config.opensAt || now > config.closesAt) {
+    if (now < new Date(config.opensAt) || now > new Date(config.closesAt)) {
       throw new SubmissionWindowClosedError();
     }
   }
@@ -135,8 +135,8 @@ export class FormService {
     if (!config) throw new FormConfigError();
     if (!config.editableUntil) throw new SubmissionEditForbiddenError();
     const now = new Date();
-    
-    if (now > config.editableUntil) {
+
+    if (now > new Date(config.editableUntil)) {
       throw new SubmissionEditForbiddenError();
     }
   }

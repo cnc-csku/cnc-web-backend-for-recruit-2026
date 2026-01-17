@@ -5,13 +5,27 @@ import { adminRoute } from "./features/admin/admin.route";
 import { bootstrapFormConfig } from "./core/bootstrap";
 import { formRoute } from "./features/form/form.route";
 import { ip } from "elysia-ip";
-import { interviewSlotRoute } from "./features/InterviewSlot/interviewSlot.route";
-import { auditPlugin } from "./features/auditLog/audit.plugin";
-import { authRoute } from "./features/auth/auth.route";
+import openapi from "@elysiajs/openapi";
+import { openapiConfig, openapiTags } from "./core/openapi";
 
 await bootstrapFormConfig();
 export const app = new Elysia()
-  .get("/health", () => ({ ok: true }))
+  .get("/", () => {
+    return {
+      name: "CNC Recruite Backend API",
+      version: "1.0.0",
+      status: "online",
+      message: "Welcome to the API",
+      documentation: "http://localhost:3000/openapi",
+    };
+  })
+  .get("/health", () => ({ ok: true }), {
+    detail: {
+      operationId: "getHealth",
+      summary: "Get health",
+      description: "Check is server is good to go",
+    },
+  })
   .onError(({ error, set }) => {
     if (error instanceof DomainError) {
       set.status = error.statusCode;
@@ -23,7 +37,8 @@ export const app = new Elysia()
       console.error(error);
     }
   })
-  .use(ip())  
+  .use(ip())
+  .use(openapi(openapiConfig))
   // .use(authRoute)
   .use(adminRoute)
   .use(candidateRoute)
