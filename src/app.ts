@@ -5,11 +5,24 @@ import { adminRoute } from "./features/admin/admin.route";
 import { bootstrapFormConfig } from "./core/bootstrap";
 import { formRoute } from "./features/form/form.route";
 import { ip } from "elysia-ip";
-import openapi from "@elysiajs/openapi";
-import { openapiConfig, openapiTags } from "./core/openapi";
+import { cors } from "@elysiajs/cors";
+import { rateLimit } from "elysia-rate-limit";
+import { helmet } from "elysia-helmet";
 
 await bootstrapFormConfig();
-export const app = new Elysia()
+export const app = new Elysia({ aot: false })
+  .use(ip())
+  .use(rateLimit({ duration: 60000, max: 100 })) // allow 100 request per 1 minute
+  .use(helmet())
+  .use(
+    cors({
+      origin: ["http://localhost:3000", "https://app.example.com"],
+      methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
+      maxAge: 86400, //24h
+    }),
+  )
   .get("/", () => {
     return {
       name: "CNC Recruite Backend API",
@@ -26,6 +39,10 @@ export const app = new Elysia()
       description: "Check is server is good to go",
     },
   })
+  // .use(authRoute)
+  .use(adminRoute)
+  .use(candidateRoute)
+  .use(formRoute)
   .onError(({ error, set }) => {
     if (error instanceof DomainError) {
       set.status = error.statusCode;
@@ -36,10 +53,4 @@ export const app = new Elysia()
     } else {
       console.error(error);
     }
-  })
-  .use(ip())
-  .use(openapi(openapiConfig))
-  // .use(authRoute)
-  .use(adminRoute)
-  .use(candidateRoute)
-  .use(formRoute);
+  });
