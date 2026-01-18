@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  CNC-Recruite-Backend-API:
+    build: .
+    container_name: CNC-Recruite-Backend-API
+    ports:
+      - "${ELYSIA_PORT}:${ELYSIA_PORT}"
+    env_file:
+      - .env.prod
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 10s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+
+  mongo-init:
+    image: mongo:7
+    container_name: mongo-init
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - .env.prod
+    volumes:
+      - ./mongo-init.sh:/scripts/mongo-init.sh:ro
+    entrypoint: ["bash", "/scripts/mongo-init.sh"]
+    restart: "no"
+
+volumes:
+  mongo-data:

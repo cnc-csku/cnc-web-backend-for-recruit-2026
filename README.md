@@ -1,22 +1,31 @@
-# Elysia with Bun runtime
+# CNC Recruite Backend API
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
-```bash
-bun create elysia ./elysia-example
-```
+## Running the Project
 
-## Development
-To start the development server run:
-```bash
-bun run dev
-```
+### Development Mode
 
-## Env
-This project DB is mongoDB in order to do transaction to avoid race condition need to enable replicas set using this exact URI
+Starts Mongo in replicas mode in the background in the background and runs the app locally with Bun.
 
 ```bash
-MONGO_URI=mongodb://localhost:27017?replicaSet=rs0
+make dev
 ```
 
-Open http://localhost:3000/ with your browser to see the result.
+### Production Mode
+
+Runs everything using Docker in detached mode. Ready for production
+
+```bash
+make prod
+```
+
+### Cleaning Up
+
+To clean up or restart mongo 
+
+⚠️ all mongo data will be deleted !!
+
+```bash
+make clearprod
+or
+make cleardev
+```

@@ -42,5 +42,4 @@ export const app = new Elysia()
   // .use(authRoute)
   .use(adminRoute)
   .use(candidateRoute)
-  .use(formRoute)
-  .listen(3000);
+  .use(formRoute);
