@@ -18,9 +18,9 @@ export const InterviewRoom = t.Union([
 export const TypeOfDPM = t.Union([t.Literal("NORMAL"), t.Literal("SPECIAL")]);
 
 export const NisitYearParticipated = t.Union([
-  t.Literal(83),
-  t.Literal(84),
-  t.Literal(85),
+  t.Literal("83"),
+  t.Literal("84"),
+  t.Literal("85"),
 ]);
 
 export const ApplicationStatus = t.Union([
@@ -38,7 +38,6 @@ export type InterviewStatusStatic = typeof InterviewStatus.static;
 
 export const CandidateModel = {
   candidate: t.Object({
-    userId: t.String({ minLength: 1 }),
     email: t.String({ minLength: 1 }),
     nisitId: t.String({ minLength: 10, maxLength: 10 }),
     firstName: t.String({ minLength: 1 }),
@@ -52,8 +51,8 @@ export const CandidateModel = {
       maximum: 4,
       multipleOf: 0.01,
     }),
-    profileImagePath: t.String(),
-    transcriptPath: t.String(),
+    profileImageKey: t.String(),
+    transcriptKey: t.String(),
     address: t.String(),
     mbti: t.String(),
     phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
@@ -82,7 +81,6 @@ export const CandidateModel = {
   }),
 
   createCandidateBody: t.Object({
-    userId: t.String({ minLength: 1 }),
     email: t.String({ minLength: 1 }),
     nisitId: t.String({ minLength: 10, maxLength: 10 }),
     firstName: t.String({ minLength: 1 }),
@@ -95,8 +93,9 @@ export const CandidateModel = {
       .Transform(t.String())
       .Decode((val) => parseFloat(val))
       .Encode((val) => val.toFixed(2)),
-    profileImagePath: t.String(),
-    transcriptPath: t.String(),
+    profileImageFile: t.File({ format: "image/*" }),
+    transcriptFile: t.File({ format: "image/*" }),
+
     address: t.String(),
     mbti: t.String(),
     phoneNumber: t.String({ minLength: 9, maxLength: 10 }),

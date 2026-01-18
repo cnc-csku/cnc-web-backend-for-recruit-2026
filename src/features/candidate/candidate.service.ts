@@ -29,7 +29,7 @@ export class CandidateService {
   constructor(
     private interviewQuestionController: InterviewQuestionController,
     private formController: FormController,
-    private auditController: AuditLogController
+    private auditController: AuditLogController,
   ) {}
 
   async getAlls(): Promise<Candidate[]> {
@@ -43,7 +43,7 @@ export class CandidateService {
   //only include interviewquestion when lookup by id
   async findById(
     id: string,
-    session?: ClientSession
+    session?: ClientSession,
   ): Promise<CandidateWithInterviewQuestions> {
     const _id = new ObjectId(id);
     const options = session ? { session } : {};
@@ -51,9 +51,8 @@ export class CandidateService {
 
     if (!candidate) throw new CandidateNotFoundError();
 
-    const interviewQ = await this.interviewQuestionController.getByCandidateId(
-      id
-    );
+    const interviewQ =
+      await this.interviewQuestionController.getByCandidateId(id);
     return { ...candidate, interviewQuestions: interviewQ };
   }
 
@@ -61,7 +60,7 @@ export class CandidateService {
     candidateId: string,
     data: Partial<CreateCandidateBody>,
     isAdmin: boolean = false,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     if (!isAdmin) await this.formController.assertEditAllowed();
     const exist = await this.findById(candidateId);
@@ -85,7 +84,7 @@ export class CandidateService {
           editCount: isAdmin ? 0 : 1,
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
     if (!result) return null;
 
@@ -109,7 +108,7 @@ export class CandidateService {
   async updateInterviewStatus(
     candidateId: string,
     status: InterviewStatusStatic,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
@@ -126,7 +125,7 @@ export class CandidateService {
       {
         $set: { interviewStatus: status, updatedAt: new Date() },
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
     if (!result) return null;
 
@@ -147,6 +146,34 @@ export class CandidateService {
     return result;
   }
 
+  async updateUploadedFile(
+    candidateId: string,
+    profileKey: string,
+    transcriptKey: string,
+  ) {
+    const exist = await this.findById(candidateId);
+    if (!exist) throw new CandidateNotFoundError();
+
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
+
+    const _id = new ObjectId(candidateId);
+
+    const result = await candidatesCol.findOneAndUpdate(
+      { _id },
+      {
+        $set: {
+          profileImageKey: profileKey,
+          transcriptKey: transcriptKey,
+          updatedAt: new Date(),
+        },
+      },
+      { returnDocument: "after" },
+    );
+    if (!result) return null;
+    return result;
+  }
+
   async createCandidate(data: CreateCandidateBody, meta: AuditMeta) {
     await this.formController.assertSubmissionAllowed();
 
@@ -156,6 +183,8 @@ export class CandidateService {
 
     const candidate: Candidate = {
       ...rest,
+      transcriptKey: "upload pending",
+      profileImageKey: "upload pending",
       currentInterviewRoom: null,
       applicationStatus: "ACTIVE",
       interviewStatus: "PENDING",
@@ -189,7 +218,7 @@ export class CandidateService {
           fullName: 1,
           email: 1,
         },
-      }
+      },
     );
     if (!result) return null;
 
@@ -218,7 +247,7 @@ export class CandidateService {
   async addInterViewQuestion(
     id: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     const exist = await this.findById(id);
     if (!exist) throw new CandidateNotFoundError();
@@ -229,7 +258,7 @@ export class CandidateService {
       await this.interviewQuestionController.createInterViewQuestion(
         id,
         data,
-        meta
+        meta,
       );
     return result;
   }
@@ -238,7 +267,7 @@ export class CandidateService {
     candidateId: string,
     questionid: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
@@ -248,21 +277,21 @@ export class CandidateService {
     return await this.interviewQuestionController.updateInterViewQuestion(
       questionid,
       data,
-      meta
+      meta,
     );
   }
 
   async deleteInterViewQuestion(questionId: string, meta: AuditMeta) {
     return await this.interviewQuestionController.deleteQuestionById(
       questionId,
-      meta
+      meta,
     );
   }
 
   async assignInterviewSlot(
     candidateId: string,
     slotId: string,
-    session?: ClientSession
+    session?: ClientSession,
   ) {
     const candidateIdObj = new ObjectId(candidateId);
 
@@ -274,7 +303,7 @@ export class CandidateService {
       {
         $set: { interviewSlotId: slotId },
       },
-      session ? { session } : undefined
+      session ? { session } : undefined,
     );
 
     if (result.matchedCount === 0) {
@@ -294,7 +323,7 @@ export class CandidateService {
       {
         $unset: { interviewSlotId: "" },
       },
-      session ? { session } : undefined
+      session ? { session } : undefined,
     );
 
     if (result.matchedCount === 0) {
@@ -307,8 +336,8 @@ export class CandidateService {
 
     const result = await candidatesCol.updateOne(
       { _id, applicationStatus: { $ne: "WITHDRAWN" } },
-      { $set: { applicationStatus: "WITHDRAWN", userId: "", email: "" } },
-      session ? { session } : undefined
+      { $set: { applicationStatus: "WITHDRAWN", email: "" } },
+      session ? { session } : undefined,
     );
 
     if (result.matchedCount === 0) {

@@ -2,12 +2,15 @@ import { Elysia } from "elysia";
 import { CandidateModel } from "./candidate.model";
 import {
   candidateController,
+  candidateUploadHandler,
   candidateWithdrawalService,
   interviewSlotController,
+  storageController,
 } from "../../lib/controllers";
 import { ip } from "elysia-ip";
 import { auditPlugin } from "../auditLog/audit.plugin";
 import { candidateOpenApi } from "./candidate.openapi";
+import { CandidateUploadHandler } from "./candidate.upload";
 
 //TODO: get profile from auth
 //TODO: Middleware rate limit
@@ -17,6 +20,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .decorate("candidateController", candidateController)
   .decorate("interviewSlotController", interviewSlotController)
   .decorate("candidateWithdrawalService", candidateWithdrawalService)
+  .decorate("candidateUploadHandler", candidateUploadHandler)
   .get(
     "/:candidateId",
     async ({ params, candidateController }) => {
@@ -43,8 +47,27 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   )
   .post(
     "/submit",
-    async ({ body, candidateController, meta }) => {
-      return await candidateController.createCandidate(body, meta);
+    async ({ body, candidateController, candidateUploadHandler, meta }) => {
+      const result = await candidateController.createCandidate(body, meta);
+      if (!result) return;
+
+      const transcript = await candidateUploadHandler.profileUpload(
+        body.transcriptFile,
+        result.insertedId.toString(),
+      );
+
+      const profile = await candidateUploadHandler.profileUpload(
+        body.profileImageFile,
+        result.insertedId.toString(),
+      );
+
+      candidateController.updateUploadedFile(
+        result.insertedId.toString(),
+        profile.key,
+        transcript.key,
+      );
+
+      return result.insertedId;
     },
     {
       body: CandidateModel.createCandidateBody,

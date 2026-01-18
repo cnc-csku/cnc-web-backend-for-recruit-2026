@@ -9,7 +9,7 @@ export const interviewSlotAdminRoute = new Elysia({ prefix: "/interview-slot" })
   .decorate("interviewSlotController", interviewSlotController)
   .get(
     "/",
-    async ({ interviewSlotController, ip }) => {
+    async ({ interviewSlotController, }) => {
       return await interviewSlotController.getAllSlot(true);
     },
     { detail: interviewSlotOpenApi.getAllSlots },

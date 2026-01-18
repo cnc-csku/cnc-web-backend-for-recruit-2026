@@ -26,14 +26,14 @@ export class CandidateController {
     candidateId: string,
     data: Partial<CreateCandidateBody>,
     isAdmin: boolean = false,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.updateCandidate(
         candidateId,
         data,
         isAdmin,
-        meta
+        meta,
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -46,13 +46,32 @@ export class CandidateController {
   async updateCandidateInterviewStatus(
     candidateId: string,
     status: InterviewStatusStatic,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.updateInterviewStatus(
         candidateId,
         status,
-        meta
+        meta,
+      );
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to update candidate");
+    }
+  }
+
+  async updateUploadedFile(
+    candidateId: string,
+    profileKey: string,
+    transcriptKey: string,
+  ) {
+    try {
+      return await this.service.updateUploadedFile(
+        candidateId,
+        profileKey,
+        transcriptKey,
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -91,7 +110,7 @@ export class CandidateController {
   async addInterViewQuestion(
     id: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.addInterViewQuestion(id, data, meta);
@@ -107,14 +126,14 @@ export class CandidateController {
     candidateId: string,
     questionId: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.updateInterViewQuestion(
         candidateId,
         questionId,
         data,
-        meta
+        meta,
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -131,7 +150,7 @@ export class CandidateController {
   async assignInterviewSlot(
     candidateId: string,
     slotId: string,
-    session?: ClientSession
+    session?: ClientSession,
   ) {
     return await this.service.assignInterviewSlot(candidateId, slotId, session);
   }

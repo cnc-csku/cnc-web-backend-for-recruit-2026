@@ -1,7 +1,10 @@
+import { StorageController } from "../core/storage/storage.controller";
+import { StorageService } from "../core/storage/storage.service";
 import { AuditLogController } from "../features/auditLog/audit.controller";
 import { AuditLogService } from "../features/auditLog/audit.service";
 import { CandidateController } from "../features/candidate/candidate.controller";
 import { CandidateService } from "../features/candidate/candidate.service";
+import { CandidateUploadHandler } from "../features/candidate/candidate.upload";
 import { CandidateWithdrawalService } from "../features/candidate/candidate.withdraw.service";
 import { FormController } from "../features/form/form.controller";
 import { FormService } from "../features/form/form.service";
@@ -17,35 +20,41 @@ const formService = new FormService(auditLogController);
 const formController = new FormController(formService);
 
 const interviewQuestionServive = new InterviewQuestionService(
-  auditLogController
+  auditLogController,
 );
 
 const interviewQuestionController = new InterviewQuestionController(
-  interviewQuestionServive
+  interviewQuestionServive,
 );
 
 const candidateService = new CandidateService(
   interviewQuestionController,
   formController,
-  auditLogController
+  auditLogController,
 );
 const candidateController = new CandidateController(candidateService);
 
 const interviewSlotService = new InterviewSlotService(
   auditLogController,
-  candidateController
+  candidateController,
 );
 const interviewSlotController = new InterviewSlotController(
-  interviewSlotService
+  interviewSlotService,
 );
 
 const candidateWithdrawalService = new CandidateWithdrawalService(
   candidateController,
   interviewSlotController,
   auditLogController,
-  formController
+  formController,
 );
 
+const storageService = new StorageService();
+const storageController = new StorageController(storageService);
+const candidateUploadHandler = new CandidateUploadHandler(
+  storageController,
+  candidateController,
+);
 export {
   formController,
   interviewQuestionController,
@@ -53,4 +62,6 @@ export {
   interviewSlotController,
   auditLogController,
   candidateWithdrawalService,
+  storageController,
+  candidateUploadHandler,
 };

@@ -29,7 +29,6 @@ export const AuditTargets = t.UnionEnum([
 export const AuditLogModel = {
   auditLog: t.Object({
     actor: t.Object({
-      userId: t.Nullable(t.String()),
       email: t.String(),
     }),
 
@@ -52,7 +51,6 @@ export const AuditLogModel = {
   }),
   auditMeta: t.Object({
     actor: t.Object({
-      userId: t.Nullable(t.String()),
       email: t.String(),
     }),
     ip: t.String(),
