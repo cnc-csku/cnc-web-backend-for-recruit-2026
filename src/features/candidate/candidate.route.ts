@@ -12,14 +12,14 @@ import { auditPlugin } from "../auditLog/audit.plugin";
 import { candidateOpenApi } from "./candidate.openapi";
 import { client } from "../../core/db";
 import { CandidateNotFoundError } from "../../core/errors";
-import { authPlugin } from "../auth/auth.plugin";
+import { authGuard } from "../auth/auth.guard";
 
 //TODO: get profile from auth
 //TODO: Middleware rate limit
 
 export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .use(auditPlugin)
-  .use(authPlugin)
+  .use(authGuard)
   .decorate("candidateController", candidateController)
   .decorate("interviewSlotController", interviewSlotController)
   .decorate("candidateWithdrawalService", candidateWithdrawalService)
@@ -28,13 +28,14 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .get(
     "/check",
     async ({ candidateController, auth }) => {
-      const email = auth.actor.email;
-      
-      return { submitted: await candidateController.isSubmitted(email) };
+      const email = auth.user.email;
+      const result = await candidateController.getCandidateByEmail(email);
+
+      return { submitted: result !== null, candidateId: result?._id };
     },
     {
       detail: candidateOpenApi.getCandidate,
-    }
+    },
   )
   .get(
     "/:candidateId",
@@ -43,7 +44,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     },
     {
       detail: candidateOpenApi.getCandidate,
-    }
+    },
   )
   .put(
     "/:id",
@@ -63,7 +64,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
           if (body.profileImageFile) {
             const profile = await candidateFileHandler.profileUpload(
               body.profileImageFile,
-              id
+              id,
             );
 
             newProfileKey = profile.key;
@@ -74,7 +75,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
           if (body.transcriptFile) {
             const transcript = await candidateFileHandler.transcriptUpload(
               body.transcriptFile,
-              id
+              id,
             );
             newTranscriptKey = transcript.key;
             oldFiles.push(candidate.transcriptKey);
@@ -90,20 +91,20 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
             },
             false,
             meta,
-            session
+            session,
           );
           if (!result) return;
         });
         await Promise.all(
           oldFiles
             .filter((v) => v !== null)
-            .map((k) => candidateFileHandler.unlink(k))
+            .map((k) => candidateFileHandler.unlink(k)),
         );
 
         return { ok: true };
       } catch (err) {
         await Promise.all(
-          uploadedKeys.map((key) => candidateFileHandler.unlink(key))
+          uploadedKeys.map((key) => candidateFileHandler.unlink(key)),
         );
         throw err;
       } finally {
@@ -113,7 +114,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     {
       body: t.Partial(CandidateModel.createCandidateBody),
       detail: candidateOpenApi.updateCandidate,
-    }
+    },
   )
   .post(
     "/submit",
@@ -126,7 +127,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
           const result = await candidateController.createCandidate(
             body,
             meta,
-            session
+            session,
           );
 
           if (!result) return;
@@ -134,13 +135,13 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
 
           const transcript = await candidateFileHandler.transcriptUpload(
             body.transcriptFile,
-            insertedId
+            insertedId,
           );
           uploadedKeys.push(transcript.key);
 
           const profile = await candidateFileHandler.profileUpload(
             body.profileImageFile,
-            insertedId
+            insertedId,
           );
           uploadedKeys.push(profile.key);
 
@@ -152,13 +153,13 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
             },
             true,
             meta,
-            session
+            session,
           );
         });
         return { insertedId };
       } catch (err) {
         await Promise.all(
-          uploadedKeys.map((key) => candidateFileHandler.unlink(key))
+          uploadedKeys.map((key) => candidateFileHandler.unlink(key)),
         );
         throw err;
       } finally {
@@ -168,27 +169,27 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     {
       body: CandidateModel.createCandidateBody,
       detail: candidateOpenApi.createCandidate,
-    }
+    },
   )
   .delete(
     "/:candidateId",
     async ({ params, meta }) => {
       return await candidateController.deleteCandidate(
         params.candidateId,
-        meta
+        meta,
       );
     },
-    { detail: candidateOpenApi.deleteCandidate }
+    { detail: candidateOpenApi.deleteCandidate },
   )
   .post(
     "/:candidateId/withdraw",
     async ({ params, body, candidateWithdrawalService, meta }) => {
       return await candidateWithdrawalService.withdraw(
         params.candidateId,
-        meta
+        meta,
       );
     },
-    { detail: candidateOpenApi.withdrawCandidate }
+    { detail: candidateOpenApi.withdrawCandidate },
   )
 
   //Interview Slot
@@ -199,13 +200,13 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       return await interviewSlotController.assignCandidateToSlot(
         params.candidateId,
         body.slotId,
-        meta
+        meta,
       );
     },
     {
       body: CandidateModel.assignSlotBody,
       detail: candidateOpenApi.assignInterviewSlot,
-    }
+    },
   )
   // Interview Slot - Change selected slot
   .patch(
@@ -214,13 +215,13 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       return await interviewSlotController.changeCandidateAssignedSlot(
         params.candidateId,
         body.slotId,
-        meta
+        meta,
       );
     },
     {
       body: CandidateModel.assignSlotBody,
       detail: candidateOpenApi.changeInterviewSlot,
-    }
+    },
   )
   // Interview Slot - Unassign candidate from a slot
   .delete(
@@ -229,11 +230,11 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       return await interviewSlotController.unAssignCandidateFromSlot(
         params.candidateId,
         body.slotId,
-        meta
+        meta,
       );
     },
     {
       body: CandidateModel.unassignSlotBody,
       detail: candidateOpenApi.unassignInterviewSlot,
-    }
+    },
   );

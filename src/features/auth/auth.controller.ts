@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { AuthService } from "./auth.service";
+import { Role } from "./auth.model";
 
 export const GoogleLoginSchema = z.object({
   id_token: z.string().min(10),
@@ -11,5 +12,11 @@ export class AuthController {
   async googleLogin(body: unknown, signJwt: (payload: any) => Promise<string>) {
     const parsed = GoogleLoginSchema.parse(body);
     return this.service.loginWithGoogleIdToken(parsed, signJwt);
+  }
+  async createUser(email: string, role: Role) {
+    return await this.service.createUser(email, role);
+  }
+  async findUserByEmail(email: string) {
+    return await this.service.findUserByEmail(email);
   }
 }

@@ -2,6 +2,8 @@ import { StorageController } from "../core/storage/storage.controller";
 import { StorageService } from "../core/storage/storage.service";
 import { AuditLogController } from "../features/auditLog/audit.controller";
 import { AuditLogService } from "../features/auditLog/audit.service";
+import { AuthController } from "../features/auth/auth.controller";
+import { AuthService } from "../features/auth/auth.service";
 import { CandidateController } from "../features/candidate/candidate.controller";
 import { CandidateFileHandler } from "../features/candidate/candidate.file";
 import { CandidateService } from "../features/candidate/candidate.service";
@@ -13,6 +15,11 @@ import { InterviewQuestionService } from "../features/interviewQuestion/intervie
 import { InterviewSlotController } from "../features/InterviewSlot/interviewSlot.controller";
 import { InterviewSlotService } from "../features/InterviewSlot/interviewSlot.service";
 
+const authService = new AuthService({
+  googleClientId: process.env.GOOGLE_CLIENT_ID!,
+});
+const authController = new AuthController(authService);
+
 const auditLogService = new AuditLogService();
 const auditLogController = new AuditLogController(auditLogService);
 
@@ -20,11 +27,11 @@ const formService = new FormService(auditLogController);
 const formController = new FormController(formService);
 
 const interviewQuestionServive = new InterviewQuestionService(
-  auditLogController
+  auditLogController,
 );
 
 const interviewQuestionController = new InterviewQuestionController(
-  interviewQuestionServive
+  interviewQuestionServive,
 );
 
 const storageService = new StorageService();
@@ -35,26 +42,27 @@ const candidateService = new CandidateService(
   interviewQuestionController,
   candidateFileHandler,
   formController,
-  auditLogController
+  auditLogController,
 );
 const candidateController = new CandidateController(candidateService);
 
 const interviewSlotService = new InterviewSlotService(
   auditLogController,
-  candidateController
+  candidateController,
 );
 const interviewSlotController = new InterviewSlotController(
-  interviewSlotService
+  interviewSlotService,
 );
 
 const candidateWithdrawalService = new CandidateWithdrawalService(
   candidateController,
   interviewSlotController,
   auditLogController,
-  formController
+  formController,
 );
 
 export {
+  authController,
   formController,
   interviewQuestionController,
   candidateController,

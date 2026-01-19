@@ -2,6 +2,7 @@ import { CreateBucketCommand, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { formCol } from "../features/form/form.model";
 import { db } from "./db";
 import { s3 } from "./storage/storage.client";
+import { usersCol } from "../features/auth/auth.model";
 
 async function ensureBucket(bucket: string) {
   try {
@@ -15,8 +16,23 @@ async function ensureBucket(bucket: string) {
   }
 }
 
-export async function bootstrapFormConfig() {
+export async function bootstrap() {
   await formCol.updateOne(
+    { _id: "FORM_CONFIG" },
+    {
+      $setOnInsert: {
+        _id: "FORM_CONFIG",
+        allowSubmit: false,
+        opensAt: new Date("2099-01-01T00:00:00Z").toISOString(),
+        closesAt: new Date("2099-01-02T00:00:00Z").toISOString(),
+        editableUntil: new Date("2099-01-02T00:00:00Z").toISOString(),
+        createdAt: new Date().toISOString(),
+      },
+    },
+    { upsert: true },
+  );
+
+  await usersCol.updateOne(
     { _id: "FORM_CONFIG" },
     {
       $setOnInsert: {

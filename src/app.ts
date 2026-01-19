@@ -2,7 +2,7 @@ import { Elysia } from "elysia";
 import { candidateRoute } from "./features/candidate/candidate.route";
 import { DomainError } from "./core/errors";
 import { adminRoute } from "./features/admin/admin.route";
-import { bootstrapFormConfig } from "./core/bootstrap";
+
 import { formRoute } from "./features/form/form.route";
 import { ip } from "elysia-ip";
 import { cors } from "@elysiajs/cors";
@@ -12,10 +12,10 @@ import { config } from "./core/config";
 import openapi from "@elysiajs/openapi";
 import { openapiConfig } from "./core/openapi";
 import { authRoute } from "./features/auth/auth.route";
-import jwt from "@elysiajs/jwt";
-import { authPlugin } from "./features/auth/auth.plugin";
+import { authGuard, requireRole } from "./features/auth/auth.guard";
+import { bootstrap } from "./core/bootstrap";
 
-await bootstrapFormConfig();
+await bootstrap();
 export const app = new Elysia()
   .use(config.isDev ? openapi(openapiConfig) : undefined)
   .use(ip())
@@ -30,8 +30,6 @@ export const app = new Elysia()
       maxAge: 86400, //24h
     }),
   )
-
-  .use(authPlugin)
 
   .get("/", () => {
     return {
@@ -49,12 +47,8 @@ export const app = new Elysia()
       description: "Check is server is good to go",
     },
   })
-
-  // .use(authRoute)
+  .use(authGuard)
   .use(authRoute)
-  // example auth helper
-  // .get("/me", ({ auth }) => auth)
-
   .use(adminRoute)
   .use(candidateRoute)
   .use(formRoute)

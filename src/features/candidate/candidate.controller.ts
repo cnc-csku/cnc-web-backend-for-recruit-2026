@@ -18,8 +18,8 @@ import { ClientSession } from "mongodb";
 export class CandidateController {
   constructor(private service: CandidateService) {}
 
-  async isSubmitted(email: string) {
-    return (await this.service.findByEmail(email)) !== null;
+  async getCandidateByEmail(email: string) {
+    return await this.service.findByEmail(email);
   }
 
   async getCandidate(id: string, session?: ClientSession) {
@@ -35,7 +35,7 @@ export class CandidateController {
     data: Partial<UpdateCandidateBody>,
     isAdmin: boolean = false,
     meta: AuditMeta,
-    session?: ClientSession
+    session?: ClientSession,
   ) {
     try {
       return await this.service.updateCandidate(
@@ -43,7 +43,7 @@ export class CandidateController {
         data,
         isAdmin,
         meta,
-        session
+        session,
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -56,13 +56,13 @@ export class CandidateController {
   async updateCandidateInterviewStatus(
     candidateId: string,
     status: InterviewStatusStatic,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.updateInterviewStatus(
         candidateId,
         status,
-        meta
+        meta,
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -75,7 +75,7 @@ export class CandidateController {
   async createCandidate(
     data: CreateCandidateBody,
     meta: AuditMeta,
-    session?: ClientSession
+    session?: ClientSession,
   ) {
     try {
       return await this.service.createCandidate(data, meta, session);
@@ -105,7 +105,7 @@ export class CandidateController {
   async addInterViewQuestion(
     id: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.addInterViewQuestion(id, data, meta);
@@ -121,14 +121,14 @@ export class CandidateController {
     candidateId: string,
     questionId: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.updateInterViewQuestion(
         candidateId,
         questionId,
         data,
-        meta
+        meta,
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -145,7 +145,7 @@ export class CandidateController {
   async assignInterviewSlot(
     candidateId: string,
     slotId: string,
-    session?: ClientSession
+    session?: ClientSession,
   ) {
     return await this.service.assignInterviewSlot(candidateId, slotId, session);
   }

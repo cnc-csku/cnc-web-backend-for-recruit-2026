@@ -123,7 +123,7 @@ export class SlotTimeOverlapError extends DomainError {
   statusCode = 403;
   code = "SLOT_TIME_OVERLAP";
   constructor(
-    message = "Interview slot with this time is overlap with other slot"
+    message = "Interview slot with this time is overlap with other slot",
   ) {
     super(message);
   }
@@ -141,6 +141,22 @@ export class AlreadyWithdrawnError extends DomainError {
   statusCode = 403;
   code = "ALREADY_WITHDRAW";
   constructor(message = "Candidate already withdrawn") {
+    super(message);
+  }
+}
+
+export class Unauthorized extends DomainError {
+  statusCode = 401;
+  code = "UNAUTHORIZED";
+  constructor(message = "Unauthorized") {
+    super(message);
+  }
+}
+
+export class Forbidden extends DomainError {
+  statusCode = 403;
+  code = "FORBIDDEN";
+  constructor(message = "Forbidden") {
     super(message);
   }
 }

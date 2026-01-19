@@ -1,5 +1,5 @@
 import { OAuth2Client } from "google-auth-library";
-import type { User } from "./auth.model";
+import type { Role, User } from "./auth.model";
 import { usersCol } from "./auth.model";
 
 export type GoogleLoginInput = {
@@ -25,7 +25,7 @@ export class AuthService {
 
   async loginWithGoogleIdToken(
     input: GoogleLoginInput,
-    signJwt: (payload: any) => Promise<string>
+    signJwt: (payload: any) => Promise<string>,
   ): Promise<AuthResult> {
     const ticket = await this.googleClient.verifyIdToken({
       idToken: input.id_token,
@@ -82,5 +82,17 @@ export class AuthService {
         picture,
       },
     };
+  }
+
+  async createUser(email: string, role: Role) {
+    return await usersCol.insertOne({
+      email: email,
+      role: role,
+      createdAt: new Date(),
+    });
+  }
+
+  async findUserByEmail(email: string) {
+    return await usersCol.findOne({ email: email });
   }
 }

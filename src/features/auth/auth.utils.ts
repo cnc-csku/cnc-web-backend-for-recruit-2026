@@ -1,13 +1,15 @@
 import { JWT } from "next-auth/jwt";
+import { Role, User } from "./auth.model";
+import { WithId } from "mongodb";
 
-export type AuthActor = {
+export type AuthUser = {
   userId: string | null;
   email: string;
+  role: Role;
 };
 
 export type AuthContextValue = {
-  actor: AuthActor;
-  role: string | null;
+  user: AuthUser;
   payload: JWT | null;
 };
 
@@ -20,17 +22,20 @@ export class AuthUtils {
     return token.trim() || null;
   }
 
-  public static toActor(payload: JWT | null): AuthActor {
+  public static toUser(user: WithId<User>): AuthUser {
     return {
-      userId: payload?.sub ?? null,
-      email: payload?.email ?? "anonymous",
+      userId: user._id.toString(),
+      role: user.role,
+      email: user?.email ?? "anonymous",
     };
   }
 
-  public static toAuth(payload: JWT | null): AuthContextValue {
+  public static toAuth(
+    payload: JWT | null,
+    user: WithId<User>,
+  ): AuthContextValue {
     return {
-      actor: this.toActor(payload),
-      role: payload?.role ?? null,
+      user: this.toUser(user),
       payload,
     };
   }

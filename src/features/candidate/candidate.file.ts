@@ -49,7 +49,6 @@ export class CandidateFileHandler {
       key: key,
       file,
     });
-    console.log(resultKey);
 
     return { bucket: BUCKET, contentType: file.type, key: resultKey };
   }

@@ -10,9 +10,11 @@ import { candidateAdminRoute } from "../candidate/candidate.route.admin";
 import { formAdminRoute } from "../form/form.route.admin";
 import { interviewSlotAdminRoute } from "../InterviewSlot/interviewSlot.route.admin";
 import { auditLogAdminRoute } from "../auditLog/audit.route.admin";
+import { requireRole } from "../auth/auth.guard";
 
 //TODO: add auth in admin route
 export const adminRoute = new Elysia({ prefix: "/admin" })
+  .use(requireRole("Admin"))
   .use(candidateAdminRoute)
   .use(interviewSlotAdminRoute)
   .use(formAdminRoute)
