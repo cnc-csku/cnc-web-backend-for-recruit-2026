@@ -60,9 +60,9 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
           const candidate = await candidateController.getCandidate(id, session);
           if (!candidate) throw new CandidateNotFoundError();
 
-          if (body.profileImageFile) {
+          if (body.profileImage) {
             const profile = await candidateFileHandler.profileUpload(
-              body.profileImageFile,
+              body.profileImage,
               id
             );
 
@@ -71,9 +71,9 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
             uploadedKeys.push(profile.key);
           }
 
-          if (body.transcriptFile) {
+          if (body.transcript) {
             const transcript = await candidateFileHandler.transcriptUpload(
-              body.transcriptFile,
+              body.transcript,
               id
             );
             newTranscriptKey = transcript.key;
@@ -133,13 +133,13 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
           insertedId = result.insertedId.toString();
 
           const transcript = await candidateFileHandler.transcriptUpload(
-            body.transcriptFile,
+            body.transcript,
             insertedId
           );
           uploadedKeys.push(transcript.key);
 
           const profile = await candidateFileHandler.profileUpload(
-            body.profileImageFile,
+            body.profileImage,
             insertedId
           );
           uploadedKeys.push(profile.key);
