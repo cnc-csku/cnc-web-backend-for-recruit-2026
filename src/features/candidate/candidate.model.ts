@@ -37,7 +37,7 @@ export const InterviewStatus = t.Union([
 export type InterviewStatusStatic = typeof InterviewStatus.static;
 
 export const CandidateModel = {
-  TypeOfDpm,
+  TypeOfDPM,
   NisitYearParticipated,
   ReferralSource,
 

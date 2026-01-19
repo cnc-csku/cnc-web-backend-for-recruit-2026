@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { CandidateModel } from "./candidate.model";
 import {
   candidateController,
@@ -62,7 +62,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
         lastName: t.String({ minLength: 1 }),
         nickName: t.String({ minLength: 1 }),
         bio: t.String(),
-        typeOfDpm: CandidateModel.TypeOfDpm,
+        typeOfDpm: CandidateModel.TypeOfDPM,
         nisitYearParticipated: CandidateModel.NisitYearParticipated,
         gradeGPAX: t.String(),
         address: t.String(),
