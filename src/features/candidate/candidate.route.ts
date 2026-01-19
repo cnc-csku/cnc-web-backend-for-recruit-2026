@@ -29,6 +29,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     "/check",
     async ({ candidateController, auth }) => {
       const email = auth.actor.email;
+      
       return { submitted: await candidateController.isSubmitted(email) };
     },
     {

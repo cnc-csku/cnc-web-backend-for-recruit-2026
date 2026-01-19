@@ -18,16 +18,16 @@ export const authRoute = new Elysia({ prefix: '/auth' })
   )
   .decorate('authService', authService)
   .decorate('authController', authController)
-  .post('/google', async ({ body, jwt, set, authController }) => {
-    try {
-      const result = await authController.googleLogin(body, (p) => jwt.sign(p))
-      return result
-    } catch (err: any) {
-      console.error("AUTH /google error:", err);
-      set.status = 401
-      return {
-        error: 'UNAUTHORIZED',
-        message: err?.message ?? 'Login failed',
-      }
-    }
-  })
+  // .post('/google', async ({ body, jwt, set, authController }) => {
+  //   try {
+  //     const result = await authController.googleLogin(body, (p) => jwt.sign(p))
+  //     return result
+  //   } catch (err: any) {
+  //     console.error("AUTH /google error:", err);
+  //     set.status = 401
+  //     return {
+  //       error: 'UNAUTHORIZED',
+  //       message: err?.message ?? 'Login failed',
+  //     }
+  //   }
+  // })
