@@ -6,6 +6,7 @@ import {
   InterviewStatusStatic,
   UpdateCandidateBody,
   UpdateCandidateBodySchema,
+  CandidateModel,
 } from "./candidate.model";
 import {
   AlreadyHasSlotError,
@@ -50,9 +51,9 @@ export class CandidateService {
             nickName: 1,
             editCount: 1,
             phoneNumber: 1,
-            applicationStatus:1,
-            interviewStatus:1,
-            currentInterviewRoom:1
+            applicationStatus: 1,
+            interviewStatus: 1,
+            currentInterviewRoom: 1,
           },
         }
       )
@@ -198,9 +199,13 @@ export class CandidateService {
     const exist = await this.findByEmail(data.email);
     if (exist) throw new DuplicateCandidateError();
     const { interviewSlotId, ...rest } = data;
+    const safe = pickSafe(
+      rest,
+      CandidateModel.createCandidateBody
+    ) as CreateCandidateBody;
 
     const candidate: Candidate = {
-      ...rest,
+      ...safe,
       transcriptKey: "upload pending",
       profileImageKey: "upload pending",
       currentInterviewRoom: null,
