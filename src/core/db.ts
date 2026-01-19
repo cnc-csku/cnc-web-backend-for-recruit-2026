@@ -1,30 +1,55 @@
-import { MongoClient, Db } from 'mongodb'
-import { config } from './config'
+import { MongoClient, Db } from "mongodb";
+import { config } from "./config";
 
-const uri = config.mongo.uri
-const dbName = config.mongo.dbName
+const uri = config.mongo.uri;
+const dbName = config.mongo.dbName;
+console.log(uri);
 
 if (!uri) {
-  throw new Error('MONGO_URI is not defined')
+  throw new Error("MONGO_URI is not defined");
 }
 if (!dbName) {
-  throw new Error('MONGO_DB_NAME is not defined')
+  throw new Error("MONGO_DB_NAME is not defined");
 }
 
-let client: MongoClient | null = null
-let database: Db | null = null
+let clientMongo: MongoClient | null = null;
+let database: Db | null = null;
 
-export async function connectToDatabase(): Promise<Db> {
-  if (database) return database
+export async function connectToDatabase(): Promise<{
+  database: Db;
+  client: MongoClient;
+}> {
+  if (database && clientMongo) return { database, client: clientMongo };
+  try {
+    clientMongo = new MongoClient(uri);
 
-  client = new MongoClient(uri)
-  await client.connect()
-  database = client.db(dbName)
+    console.log("[DB] Connecting to MongoDB...");
+    await clientMongo.connect();
 
-  console.log('[DB] Connected to MongoDB:', dbName)
-  return database
+    database = clientMongo.db(dbName);
+    console.log("[DB] Connected to MongoDB:", dbName);
+
+    clientMongo.on("close", () => {
+      console.error("[DB] MongoDB connection closed");
+      database = null;
+      clientMongo = null;
+    });
+
+    return { database, client: clientMongo };
+  } catch (err) {
+    console.error("[DB] Failed to connect to MongoDB");
+    console.error(err);
+    clientMongo = null;
+    database = null;
+
+    throw err;
+  }
+}
+
+export async function client() {
+  return (await connectToDatabase()).client;
 }
 
 export async function db() {
-  return connectToDatabase()
+  return (await connectToDatabase()).database;
 }

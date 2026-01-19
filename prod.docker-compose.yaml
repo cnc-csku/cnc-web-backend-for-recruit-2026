@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  cnc-recruite-backend-api:
+    build: .
+    container_name: CNC-Recruite-Backend-API
+    ports:
+      - "${ELYSIA_PORT}:${ELYSIA_PORT}"
+    env_file:
+      - .env.prod
+    depends_on:
+      - mongo
+      - minio
+
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 10s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+
+  mongo-init:
+    image: mongo:7
+    container_name: mongo-init
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - .env.prod
+    volumes:
+      - ./mongo-init.sh:/scripts/mongo-init.sh:ro
+    entrypoint: ["bash", "/scripts/mongo-init.sh"]
+    restart: "no"
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data/minio
+    env_file:
+      - .env.prod
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+    command: server /data/minio --console-address ":9001"
+
+volumes:
+  mongo-data:
+  minio-data:

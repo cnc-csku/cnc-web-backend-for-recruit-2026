@@ -4,12 +4,11 @@ WORKDIR /app
 
 COPY package.json bun.lockb* ./
 
+# RUN bun install --production
 RUN bun install --production
 
 COPY tsconfig.json ./
 COPY src ./src
+COPY shared ./shared
 
-ENV NODE_ENV=production
-EXPOSE 3000
-
-CMD ["bun", "src/index.ts"]
+CMD ["bun", "dev"]
