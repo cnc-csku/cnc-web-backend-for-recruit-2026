@@ -23,6 +23,13 @@ export const NisitYearParticipated = t.Union([
   t.Literal(85),
 ]);
 
+// String version for multipart/form-data (FormData only accepts strings)
+export const NisitYearParticipatedString = t.Union([
+  t.Literal("83"),
+  t.Literal("84"),
+  t.Literal("85"),
+]);
+
 export const ApplicationStatus = t.Union([
   t.Literal("ACTIVE"),
   t.Literal("WITHDRAWN"),
@@ -39,6 +46,7 @@ export type InterviewStatusStatic = typeof InterviewStatus.static;
 export const CandidateModel = {
   TypeOfDpm,
   NisitYearParticipated,
+  NisitYearParticipatedString,
   ReferralSource,
 
   candidate: t.Object({
@@ -50,7 +58,7 @@ export const CandidateModel = {
     nickName: t.String({ minLength: 1 }),
     bio: t.String(),
     typeOfDpm: TypeOfDPM,
-    nisitYearParticipated: NisitYearParticipated,
+    nisitYearParticipated: NisitYearParticipatedString,
     gradeGPAX: t.Number({
       minimum: 0,
       maximum: 4,
@@ -86,7 +94,6 @@ export const CandidateModel = {
   }),
 
   createCandidateBody: t.Object({
-    userId: t.String({ minLength: 1 }),
     email: t.String({ minLength: 1 }),
     nisitId: t.String({ minLength: 10, maxLength: 10 }),
     firstName: t.String({ minLength: 1 }),
@@ -94,7 +101,7 @@ export const CandidateModel = {
     nickName: t.String({ minLength: 1 }),
     bio: t.String(),
     typeOfDpm: TypeOfDPM,
-    nisitYearParticipated: NisitYearParticipated,
+    nisitYearParticipated: NisitYearParticipatedString,
     gradeGPAX: t
       .Transform(t.String())
       .Decode((val) => parseFloat(val))
@@ -134,7 +141,6 @@ export const CandidateModel = {
 
   // Schema for multipart submission (files are handled separately by Elysia)
   createCandidateMultipartBody: t.Object({
-    userId: t.String({ minLength: 1 }),
     email: t.String({ minLength: 1 }),
     nisitId: t.String({ minLength: 10, maxLength: 10 }),
     firstName: t.String({ minLength: 1 }),
@@ -142,7 +148,7 @@ export const CandidateModel = {
     nickName: t.String({ minLength: 1 }),
     bio: t.String(),
     typeOfDpm: TypeOfDPM,
-    nisitYearParticipated: NisitYearParticipated,
+    nisitYearParticipated: NisitYearParticipatedString,
     gradeGPAX: t
       .Transform(t.String())
       .Decode((val) => parseFloat(val))

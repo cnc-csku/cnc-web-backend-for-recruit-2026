@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { CandidateModel } from "./candidate.model";
 import {
   candidateController,
@@ -43,8 +43,28 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   )
   .post(
     "/submit",
-    async ({ body, candidateController, meta }) => {
+    async ({ body, candidateController, meta, request }) => {
+      // Debug: Log incoming request data
+      console.log("=== /submit DEBUG ===");
+      console.log("Content-Type:", request.headers.get("content-type"));
+      console.log("Body keys:", Object.keys(body));
+      console.log("Full body:", JSON.stringify(body, null, 2));
+
       const { profileImage, transcript, ...formData } = body;
+
+      console.log("\nExtracted formData:", formData);
+      console.log("\nprofileImage:", {
+        name: profileImage?.name,
+        type: profileImage?.type,
+        size: profileImage?.size,
+      });
+      console.log("\ntranscript:", {
+        name: transcript?.name,
+        type: transcript?.type,
+        size: transcript?.size,
+      });
+      console.log("=== END DEBUG ===\n");
+
       return await candidateController.createCandidateWithFiles(
         formData as any,
         profileImage,
@@ -55,15 +75,14 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     {
       body: t.Object({
         // Form fields
-        userId: t.String({ minLength: 1 }),
         email: t.String({ minLength: 1 }),
         nisitId: t.String({ minLength: 10, maxLength: 10 }),
         firstName: t.String({ minLength: 1 }),
         lastName: t.String({ minLength: 1 }),
         nickName: t.String({ minLength: 1 }),
         bio: t.String(),
-        typeOfDpm: CandidateModel.TypeOfDpm,
-        nisitYearParticipated: CandidateModel.NisitYearParticipated,
+        typeOfDpm: CandidateModel.TypeOfDPM,
+        nisitYearParticipated: CandidateModel.NisitYearParticipatedString,
         gradeGPAX: t.String(),
         address: t.String(),
         mbti: t.String(),
