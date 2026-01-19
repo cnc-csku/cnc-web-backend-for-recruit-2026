@@ -8,6 +8,9 @@ import { ip } from "elysia-ip";
 import { cors } from "@elysiajs/cors";
 import { rateLimit } from "elysia-rate-limit";
 import { helmet } from "elysia-helmet";
+import { authRoute } from "./features/auth/auth.route";
+import jwt from "@elysiajs/jwt";
+import { authPlugin } from "./features/auth/auth.plugin";
 
 await bootstrapFormConfig();
 export const app = new Elysia({ aot: false })
@@ -23,6 +26,10 @@ export const app = new Elysia({ aot: false })
       maxAge: 86400, //24h
     }),
   )
+
+  .use(jwt({name: "jwt", secret: process.env.JWT_SECRET! }))
+  .use(authPlugin)
+
   .get("/", () => {
     return {
       name: "CNC Recruite Backend API",
@@ -39,10 +46,14 @@ export const app = new Elysia({ aot: false })
       description: "Check is server is good to go",
     },
   })
-  // .use(authRoute)
+  .use(authRoute)
+  // example auth helper
+  // .get("/me", ({ auth }) => auth)
+
   .use(adminRoute)
   .use(candidateRoute)
   .use(formRoute)
+
   .onError(({ error, set }) => {
     if (error instanceof DomainError) {
       set.status = error.statusCode;
