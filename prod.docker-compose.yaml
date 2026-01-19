@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  CNC-Recruite-Backend-API:
+  cnc-recruite-backend-api:
     build: .
     container_name: CNC-Recruite-Backend-API
     ports:
