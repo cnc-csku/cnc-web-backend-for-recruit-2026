@@ -27,7 +27,6 @@ export const app = new Elysia({ aot: false })
     }),
   )
 
-  .use(jwt({name: "jwt", secret: process.env.JWT_SECRET! }))
   .use(authPlugin)
 
   .get("/", () => {
