@@ -1,6 +1,10 @@
 import { Elysia, t } from "elysia";
 import { CandidateService } from "./candidate.service";
-import { CreateCandidateBody, InterviewStatusStatic } from "./candidate.model";
+import {
+  CreateCandidateBody,
+  InterviewStatusStatic,
+  UpdateCandidateBody,
+} from "./candidate.model";
 import {
   CandidateNotFoundError,
   DomainError,
@@ -24,9 +28,10 @@ export class CandidateController {
 
   async updateCandidate(
     candidateId: string,
-    data: Partial<CreateCandidateBody>,
+    data: Partial<UpdateCandidateBody>,
     isAdmin: boolean = false,
     meta: AuditMeta,
+    session?: ClientSession
   ) {
     try {
       return await this.service.updateCandidate(
@@ -34,6 +39,7 @@ export class CandidateController {
         data,
         isAdmin,
         meta,
+        session
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -46,13 +52,13 @@ export class CandidateController {
   async updateCandidateInterviewStatus(
     candidateId: string,
     status: InterviewStatusStatic,
-    meta: AuditMeta,
+    meta: AuditMeta
   ) {
     try {
       return await this.service.updateInterviewStatus(
         candidateId,
         status,
-        meta,
+        meta
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -62,28 +68,13 @@ export class CandidateController {
     }
   }
 
-  async updateUploadedFile(
-    candidateId: string,
-    profileKey: string,
-    transcriptKey: string,
+  async createCandidate(
+    data: CreateCandidateBody,
+    meta: AuditMeta,
+    session?: ClientSession
   ) {
     try {
-      return await this.service.updateUploadedFile(
-        candidateId,
-        profileKey,
-        transcriptKey,
-      );
-    } catch (err) {
-      if (err instanceof DomainError) {
-        throw err;
-      }
-      throw new Error("Failed to update candidate");
-    }
-  }
-
-  async createCandidate(data: CreateCandidateBody, meta: AuditMeta) {
-    try {
-      return await this.service.createCandidate(data, meta);
+      return await this.service.createCandidate(data, meta, session);
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
@@ -110,7 +101,7 @@ export class CandidateController {
   async addInterViewQuestion(
     id: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta,
+    meta: AuditMeta
   ) {
     try {
       return await this.service.addInterViewQuestion(id, data, meta);
@@ -126,14 +117,14 @@ export class CandidateController {
     candidateId: string,
     questionId: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta,
+    meta: AuditMeta
   ) {
     try {
       return await this.service.updateInterViewQuestion(
         candidateId,
         questionId,
         data,
-        meta,
+        meta
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -150,7 +141,7 @@ export class CandidateController {
   async assignInterviewSlot(
     candidateId: string,
     slotId: string,
-    session?: ClientSession,
+    session?: ClientSession
   ) {
     return await this.service.assignInterviewSlot(candidateId, slotId, session);
   }

@@ -23,7 +23,7 @@ export class StorageService {
         ContentType: params.contentType,
       }),
     );
-
+    
     return params.key;
   }
 

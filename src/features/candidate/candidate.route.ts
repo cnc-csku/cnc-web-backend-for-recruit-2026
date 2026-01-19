@@ -1,8 +1,8 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { CandidateModel } from "./candidate.model";
 import {
   candidateController,
-  candidateUploadHandler,
+  candidateFileHandler,
   candidateWithdrawalService,
   interviewSlotController,
   storageController,
@@ -10,7 +10,8 @@ import {
 import { ip } from "elysia-ip";
 import { auditPlugin } from "../auditLog/audit.plugin";
 import { candidateOpenApi } from "./candidate.openapi";
-import { CandidateUploadHandler } from "./candidate.upload";
+import { client } from "../../core/db";
+import { CandidateNotFoundError } from "../../core/errors";
 
 //TODO: get profile from auth
 //TODO: Middleware rate limit
@@ -20,7 +21,8 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .decorate("candidateController", candidateController)
   .decorate("interviewSlotController", interviewSlotController)
   .decorate("candidateWithdrawalService", candidateWithdrawalService)
-  .decorate("candidateUploadHandler", candidateUploadHandler)
+  .decorate("candidateFileHandler", candidateFileHandler)
+  .decorate("storageController", storageController)
   .get(
     "/:candidateId",
     async ({ params, candidateController }) => {
@@ -28,71 +30,152 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     },
     {
       detail: candidateOpenApi.getCandidate,
-    },
+    }
   )
   .put(
     "/:id",
     async ({ params, body, candidateController, meta }) => {
-      return await candidateController.updateCandidate(
-        params.id,
-        body,
-        false,
-        meta,
-      );
+      const session = (await client()).startSession();
+      const uploadedKeys: string[] = [];
+      let newProfileKey: string | null = null;
+      let newTranscriptKey: string | null = null;
+      let oldFiles: (string | null)[] = [];
+
+      const id = params.id;
+      try {
+        await session.withTransaction(async () => {
+          const candidate = await candidateController.getCandidate(id, session);
+          if (!candidate) throw new CandidateNotFoundError();
+
+          if (body.profileImageFile) {
+            const profile = await candidateFileHandler.profileUpload(
+              body.profileImageFile,
+              id
+            );
+
+            newProfileKey = profile.key;
+            oldFiles.push(candidate.profileImageKey);
+            uploadedKeys.push(profile.key);
+          }
+
+          if (body.transcriptFile) {
+            const transcript = await candidateFileHandler.transcriptUpload(
+              body.transcriptFile,
+              id
+            );
+            newTranscriptKey = transcript.key;
+            oldFiles.push(candidate.transcriptKey);
+            uploadedKeys.push(transcript.key);
+          }
+
+          const result = await candidateController.updateCandidate(
+            id,
+            {
+              ...body,
+              ...(newProfileKey && { profileImageKey: newProfileKey }),
+              ...(newTranscriptKey && { transcriptKey: newTranscriptKey }),
+            },
+            false,
+            meta,
+            session
+          );
+          if (!result) return;
+        });
+        await Promise.all(
+          oldFiles
+            .filter((v) => v !== null)
+            .map((k) => candidateFileHandler.unlink(k))
+        );
+
+        return { ok: true };
+      } catch (err) {
+        await Promise.all(
+          uploadedKeys.map((key) => candidateFileHandler.unlink(key))
+        );
+        throw err;
+      } finally {
+        await session.endSession();
+      }
     },
     {
-      body: CandidateModel.createCandidateBody,
+      body: t.Partial(CandidateModel.createCandidateBody),
       detail: candidateOpenApi.updateCandidate,
-    },
+    }
   )
   .post(
     "/submit",
-    async ({ body, candidateController, candidateUploadHandler, meta }) => {
-      const result = await candidateController.createCandidate(body, meta);
-      if (!result) return;
+    async ({ body, candidateController,candidateFileHandler, meta }) => {
+      const session = (await client()).startSession();
+      const uploadedKeys: string[] = [];
+      let insertedId: string = "";
+      try {
+        await session.withTransaction(async () => {
+          const result = await candidateController.createCandidate(
+            body,
+            meta,
+            session
+          );
 
-      const transcript = await candidateUploadHandler.profileUpload(
-        body.transcriptFile,
-        result.insertedId.toString(),
-      );
+          if (!result) return;
+          insertedId = result.insertedId.toString();
 
-      const profile = await candidateUploadHandler.profileUpload(
-        body.profileImageFile,
-        result.insertedId.toString(),
-      );
+          const transcript = await candidateFileHandler.transcriptUpload(
+            body.transcriptFile,
+            insertedId
+          );
+          uploadedKeys.push(transcript.key);
 
-      candidateController.updateUploadedFile(
-        result.insertedId.toString(),
-        profile.key,
-        transcript.key,
-      );
+          const profile = await candidateFileHandler.profileUpload(
+            body.profileImageFile,
+            insertedId
+          );
+          uploadedKeys.push(profile.key);
 
-      return result.insertedId;
+          await candidateController.updateCandidate(
+            insertedId,
+            {
+              profileImageKey: profile.key,
+              transcriptKey: transcript.key,
+            },
+            true,
+            meta,
+            session
+          );
+        });
+        return { insertedId };
+      } catch (err) {
+        await Promise.all(
+          uploadedKeys.map((key) => candidateFileHandler.unlink(key))
+        );
+        throw err;
+      } finally {
+        await session.endSession();
+      }
     },
     {
       body: CandidateModel.createCandidateBody,
       detail: candidateOpenApi.createCandidate,
-    },
+    }
   )
   .delete(
     "/:candidateId",
     async ({ params, meta }) => {
       return await candidateController.deleteCandidate(
         params.candidateId,
-        meta,
+        meta
       );
     },
-    { detail: candidateOpenApi.deleteCandidate },
+    { detail: candidateOpenApi.deleteCandidate }
   )
   .post(
     "/:candidateId/withdraw",
     async ({ params, body, candidateWithdrawalService, meta }) => {
       return await candidateWithdrawalService.withdraw(
         params.candidateId,
-        meta,
+        meta
       );
     },
-    { detail: candidateOpenApi.withdrawCandidate },
+    { detail: candidateOpenApi.withdrawCandidate }
   )
 
   //Interview Slot
@@ -103,13 +186,13 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       return await interviewSlotController.assignCandidateToSlot(
         params.candidateId,
         body.slotId,
-        meta,
+        meta
       );
     },
     {
       body: CandidateModel.assignSlotBody,
       detail: candidateOpenApi.assignInterviewSlot,
-    },
+    }
   )
   // Interview Slot - Change selected slot
   .patch(
@@ -118,13 +201,13 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       return await interviewSlotController.changeCandidateAssignedSlot(
         params.candidateId,
         body.slotId,
-        meta,
+        meta
       );
     },
     {
       body: CandidateModel.assignSlotBody,
       detail: candidateOpenApi.changeInterviewSlot,
-    },
+    }
   )
   // Interview Slot - Unassign candidate from a slot
   .delete(
@@ -133,11 +216,11 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       return await interviewSlotController.unAssignCandidateFromSlot(
         params.candidateId,
         body.slotId,
-        meta,
+        meta
       );
     },
     {
       body: CandidateModel.unassignSlotBody,
       detail: candidateOpenApi.unassignInterviewSlot,
-    },
+    }
   );

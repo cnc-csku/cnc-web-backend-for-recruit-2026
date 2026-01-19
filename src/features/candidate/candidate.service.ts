@@ -4,6 +4,8 @@ import {
   candidatesCol,
   CandidateWithInterviewQuestions,
   InterviewStatusStatic,
+  UpdateCandidateBody,
+  UpdateCandidateBodySchema,
 } from "./candidate.model";
 import {
   AlreadyHasSlotError,
@@ -22,18 +24,40 @@ import { AuditMeta } from "../auditLog/audit.model";
 import { buildProjection } from "../../utils/buildProjection";
 import { AuditUtils } from "../auditLog/audit.utils";
 import { InterviewSlotController } from "../InterviewSlot/interviewSlot.controller";
+import { pickSafe } from "../../utils/pickSafe";
+import { CandidateFileHandler } from "./candidate.file";
 
 const MAX_EDIT_ALLOW = 99999;
 
 export class CandidateService {
   constructor(
     private interviewQuestionController: InterviewQuestionController,
+    private candidateFileHandler: CandidateFileHandler,
     private formController: FormController,
-    private auditController: AuditLogController,
+    private auditController: AuditLogController
   ) {}
 
   async getAlls(): Promise<Candidate[]> {
-    return await candidatesCol.find({}).toArray();
+    const candidates = await candidatesCol
+      .find(
+        {},
+        {
+          projection: {
+            _id: 1,
+            email: 1,
+            firstName: 1,
+            lastName: 1,
+            nickName: 1,
+            editCount: 1,
+            phoneNumber: 1,
+            applicationStatus:1,
+            interviewStatus:1,
+            currentInterviewRoom:1
+          },
+        }
+      )
+      .toArray();
+    return candidates;
   }
 
   async findByEmail(email: string): Promise<Candidate | null> {
@@ -43,7 +67,7 @@ export class CandidateService {
   //only include interviewquestion when lookup by id
   async findById(
     id: string,
-    session?: ClientSession,
+    session?: ClientSession
   ): Promise<CandidateWithInterviewQuestions> {
     const _id = new ObjectId(id);
     const options = session ? { session } : {};
@@ -51,19 +75,35 @@ export class CandidateService {
 
     if (!candidate) throw new CandidateNotFoundError();
 
-    const interviewQ =
-      await this.interviewQuestionController.getByCandidateId(id);
-    return { ...candidate, interviewQuestions: interviewQ };
+    const interviewQ = await this.interviewQuestionController.getByCandidateId(
+      id
+    );
+    const profileUrl = candidate.profileImageKey
+      ? await this.candidateFileHandler.getPresignedUrl(
+          candidate.profileImageKey
+        )
+      : null;
+    const transcriptUrl = candidate.transcriptKey
+      ? await this.candidateFileHandler.getPresignedUrl(candidate.transcriptKey)
+      : null;
+    return {
+      ...candidate,
+      interviewQuestions: interviewQ,
+      profileImageKey: profileUrl,
+      transcriptKey: transcriptUrl,
+    };
   }
 
   async updateCandidate(
     candidateId: string,
-    data: Partial<CreateCandidateBody>,
+    data: Partial<UpdateCandidateBody>,
     isAdmin: boolean = false,
     meta: AuditMeta,
+    session?: ClientSession
   ) {
     if (!isAdmin) await this.formController.assertEditAllowed();
-    const exist = await this.findById(candidateId);
+    const exist = await this.findById(candidateId, session);
+
     if (!exist) throw new CandidateNotFoundError();
     if (exist.editCount >= MAX_EDIT_ALLOW && !isAdmin)
       throw new EditLimitExceededError();
@@ -73,18 +113,20 @@ export class CandidateService {
 
     const _id = new ObjectId(candidateId);
 
-    const before = await candidatesCol.findOne({ _id });
+    const before = await candidatesCol.findOne({ _id }, { session });
 
-    const { email, ...rest } = data;
+    const { email, interviewSlotId, ...rest } = data;
+    const safeData = pickSafe(rest, UpdateCandidateBodySchema);
+
     const result = await candidatesCol.findOneAndUpdate(
       { _id },
       {
-        $set: { ...rest, updatedAt: new Date() },
+        $set: { ...safeData, updatedAt: new Date() },
         $inc: {
           editCount: isAdmin ? 0 : 1,
         },
       },
-      { returnDocument: "after" },
+      { returnDocument: "after", session }
     );
     if (!result) return null;
 
@@ -108,7 +150,7 @@ export class CandidateService {
   async updateInterviewStatus(
     candidateId: string,
     status: InterviewStatusStatic,
-    meta: AuditMeta,
+    meta: AuditMeta
   ) {
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
@@ -125,7 +167,7 @@ export class CandidateService {
       {
         $set: { interviewStatus: status, updatedAt: new Date() },
       },
-      { returnDocument: "after" },
+      { returnDocument: "after" }
     );
     if (!result) return null;
 
@@ -146,35 +188,11 @@ export class CandidateService {
     return result;
   }
 
-  async updateUploadedFile(
-    candidateId: string,
-    profileKey: string,
-    transcriptKey: string,
+  async createCandidate(
+    data: CreateCandidateBody,
+    meta: AuditMeta,
+    session?: ClientSession
   ) {
-    const exist = await this.findById(candidateId);
-    if (!exist) throw new CandidateNotFoundError();
-
-    if (exist.applicationStatus === "WITHDRAWN")
-      throw new AlreadyWithdrawnError();
-
-    const _id = new ObjectId(candidateId);
-
-    const result = await candidatesCol.findOneAndUpdate(
-      { _id },
-      {
-        $set: {
-          profileImageKey: profileKey,
-          transcriptKey: transcriptKey,
-          updatedAt: new Date(),
-        },
-      },
-      { returnDocument: "after" },
-    );
-    if (!result) return null;
-    return result;
-  }
-
-  async createCandidate(data: CreateCandidateBody, meta: AuditMeta) {
     await this.formController.assertSubmissionAllowed();
 
     const exist = await this.findByEmail(data.email);
@@ -192,7 +210,7 @@ export class CandidateService {
       createdAt: new Date(),
       updatedAt: null,
     };
-    const result = await candidatesCol.insertOne(candidate);
+    const result = await candidatesCol.insertOne(candidate, { session });
 
     this.auditController.audit({
       ...meta,
@@ -218,7 +236,7 @@ export class CandidateService {
           fullName: 1,
           email: 1,
         },
-      },
+      }
     );
     if (!result) return null;
 
@@ -247,7 +265,7 @@ export class CandidateService {
   async addInterViewQuestion(
     id: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta,
+    meta: AuditMeta
   ) {
     const exist = await this.findById(id);
     if (!exist) throw new CandidateNotFoundError();
@@ -258,7 +276,7 @@ export class CandidateService {
       await this.interviewQuestionController.createInterViewQuestion(
         id,
         data,
-        meta,
+        meta
       );
     return result;
   }
@@ -267,7 +285,7 @@ export class CandidateService {
     candidateId: string,
     questionid: string,
     data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta,
+    meta: AuditMeta
   ) {
     const exist = await this.findById(candidateId);
     if (!exist) throw new CandidateNotFoundError();
@@ -277,21 +295,21 @@ export class CandidateService {
     return await this.interviewQuestionController.updateInterViewQuestion(
       questionid,
       data,
-      meta,
+      meta
     );
   }
 
   async deleteInterViewQuestion(questionId: string, meta: AuditMeta) {
     return await this.interviewQuestionController.deleteQuestionById(
       questionId,
-      meta,
+      meta
     );
   }
 
   async assignInterviewSlot(
     candidateId: string,
     slotId: string,
-    session?: ClientSession,
+    session?: ClientSession
   ) {
     const candidateIdObj = new ObjectId(candidateId);
 
@@ -303,7 +321,7 @@ export class CandidateService {
       {
         $set: { interviewSlotId: slotId },
       },
-      session ? { session } : undefined,
+      session ? { session } : undefined
     );
 
     if (result.matchedCount === 0) {
@@ -323,7 +341,7 @@ export class CandidateService {
       {
         $unset: { interviewSlotId: "" },
       },
-      session ? { session } : undefined,
+      session ? { session } : undefined
     );
 
     if (result.matchedCount === 0) {
@@ -337,7 +355,7 @@ export class CandidateService {
     const result = await candidatesCol.updateOne(
       { _id, applicationStatus: { $ne: "WITHDRAWN" } },
       { $set: { applicationStatus: "WITHDRAWN", email: "" } },
-      session ? { session } : undefined,
+      session ? { session } : undefined
     );
 
     if (result.matchedCount === 0) {
