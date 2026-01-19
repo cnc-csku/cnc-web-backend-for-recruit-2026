@@ -1,6 +1,10 @@
 import { Elysia, t } from "elysia";
 import { CandidateService } from "./candidate.service";
-import { CreateCandidateBody, InterviewStatusStatic } from "./candidate.model";
+import {
+  CreateCandidateBody,
+  InterviewStatusStatic,
+  CreateCandidateMultipartBody,
+} from "./candidate.model";
 import {
   CandidateNotFoundError,
   DomainError,
@@ -70,6 +74,27 @@ export class CandidateController {
         throw err;
       }
       throw new Error("Failed to create candidate");
+    }
+  }
+
+  async createCandidateWithFiles(
+    formData: CreateCandidateMultipartBody,
+    profileImage: File,
+    transcriptFile: File,
+    meta: AuditMeta
+  ) {
+    try {
+      return await this.service.createCandidateWithFiles(
+        formData,
+        profileImage,
+        transcriptFile,
+        meta
+      );
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to create candidate with files");
     }
   }
 

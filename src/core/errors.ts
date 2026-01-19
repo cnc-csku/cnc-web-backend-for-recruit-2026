@@ -144,3 +144,35 @@ export class AlreadyWithdrawnError extends DomainError {
     super(message);
   }
 }
+
+export class FileUploadError extends DomainError {
+  statusCode = 500;
+  code = "FILE_UPLOAD_ERROR";
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+export class FileSizeExceededError extends DomainError {
+  statusCode = 413;
+  code = "FILE_SIZE_EXCEEDED";
+  constructor(message = "File size exceeds maximum allowed") {
+    super(message);
+  }
+}
+
+export class InvalidFileTypeError extends DomainError {
+  statusCode = 415;
+  code = "INVALID_FILE_TYPE";
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+export class MinIOConnectionError extends DomainError {
+  statusCode = 503;
+  code = "MINIO_CONNECTION_ERROR";
+  constructor(message = "Failed to connect to MinIO storage") {
+    super(message);
+  }
+}

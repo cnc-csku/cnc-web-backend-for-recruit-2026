@@ -44,11 +44,50 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .post(
     "/submit",
     async ({ body, candidateController, meta }) => {
-      return await candidateController.createCandidate(body, meta);
+      const { profileImage, transcript, ...formData } = body;
+      return await candidateController.createCandidateWithFiles(
+        formData as any,
+        profileImage,
+        transcript,
+        meta
+      );
     },
     {
-      body: CandidateModel.createCandidateBody,
-      detail: candidateOpenApi.createCandidate,
+      body: t.Object({
+        // Form fields
+        userId: t.String({ minLength: 1 }),
+        email: t.String({ minLength: 1 }),
+        nisitId: t.String({ minLength: 10, maxLength: 10 }),
+        firstName: t.String({ minLength: 1 }),
+        lastName: t.String({ minLength: 1 }),
+        nickName: t.String({ minLength: 1 }),
+        bio: t.String(),
+        typeOfDpm: CandidateModel.TypeOfDpm,
+        nisitYearParticipated: CandidateModel.NisitYearParticipated,
+        gradeGPAX: t.String(),
+        address: t.String(),
+        mbti: t.String(),
+        phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
+        socialContact: t.String(),
+        github: t.String(),
+        interviewSlotId: t.Optional(t.String()),
+        referralSource: CandidateModel.ReferralSource,
+        projectExperience: t.String(),
+        clubs: t.String(),
+        interests: t.String(),
+        hobbies: t.String(),
+        whyCnc: t.String(),
+        expected: t.String(),
+        tools: t.String(),
+
+        // File fields
+        profileImage: t.File(),
+        transcript: t.File(),
+      }),
+      detail: {
+        ...candidateOpenApi.createCandidate,
+        description: "Submit candidate application with profile image and transcript files",
+      },
     },
   )
   .delete(

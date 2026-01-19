@@ -9,6 +9,8 @@ import { InterviewQuestionController } from "../features/interviewQuestion/inter
 import { InterviewQuestionService } from "../features/interviewQuestion/interviewQuestion.service";
 import { InterviewSlotController } from "../features/InterviewSlot/interviewSlot.controller";
 import { InterviewSlotService } from "../features/InterviewSlot/interviewSlot.service";
+import { StorageService } from "../features/storage/storage.service";
+import { StorageController } from "../features/storage/storage.controller";
 
 const auditLogService = new AuditLogService();
 const auditLogController = new AuditLogController(auditLogService);
@@ -24,10 +26,15 @@ const interviewQuestionController = new InterviewQuestionController(
   interviewQuestionServive
 );
 
+// Initialize StorageService
+const storageService = new StorageService();
+const storageController = new StorageController(storageService);
+
 const candidateService = new CandidateService(
   interviewQuestionController,
   formController,
-  auditLogController
+  auditLogController,
+  storageController
 );
 const candidateController = new CandidateController(candidateService);
 
@@ -53,4 +60,6 @@ export {
   interviewSlotController,
   auditLogController,
   candidateWithdrawalService,
+  storageController,
+  storageService,
 };

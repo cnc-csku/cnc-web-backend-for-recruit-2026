@@ -4,6 +4,7 @@ import {
   candidatesCol,
   CandidateWithInterviewQuestions,
   InterviewStatusStatic,
+  CreateCandidateMultipartBody,
 } from "./candidate.model";
 import {
   AlreadyHasSlotError,
@@ -22,6 +23,7 @@ import { AuditMeta } from "../auditLog/audit.model";
 import { buildProjection } from "../../utils/buildProjection";
 import { AuditUtils } from "../auditLog/audit.utils";
 import { InterviewSlotController } from "../InterviewSlot/interviewSlot.controller";
+import { StorageController } from "../storage/storage.controller";
 
 const MAX_EDIT_ALLOW = 99999;
 
@@ -29,7 +31,8 @@ export class CandidateService {
   constructor(
     private interviewQuestionController: InterviewQuestionController,
     private formController: FormController,
-    private auditController: AuditLogController
+    private auditController: AuditLogController,
+    private storageController?: StorageController
   ) {}
 
   async getAlls(): Promise<Candidate[]> {
@@ -177,6 +180,81 @@ export class CandidateService {
         id: result.insertedId.toString(),
       },
     });
+    return result;
+  }
+
+  async createCandidateWithFiles(
+    formData: CreateCandidateMultipartBody,
+    profileImage: File,
+    transcriptFile: File,
+    meta: AuditMeta
+  ) {
+    await this.formController.assertSubmissionAllowed();
+
+    const exist = await this.findByEmail(formData.email);
+    if (exist) throw new DuplicateCandidateError();
+
+    if (!this.storageController) {
+      throw new Error("Storage controller not initialized");
+    }
+
+    const { interviewSlotId, ...rest } = formData;
+
+    // Upload files to MinIO
+    let profileImagePath = "";
+    let transcriptPath = "";
+
+    try {
+      const profileResult = await this.storageController.uploadFile(
+        profileImage,
+        "profile",
+        formData.email // Use email as temporary identifier
+      );
+      profileImagePath = profileResult.url;
+
+      const transcriptResult = await this.storageController.uploadFile(
+        transcriptFile,
+        "transcript",
+        formData.email
+      );
+      transcriptPath = transcriptResult.url;
+    } catch (error) {
+      // If file upload fails, we don't create the candidate
+      // Files uploaded before error should be cleaned up (can add cleanup logic)
+      throw error;
+    }
+
+    const candidate: Candidate = {
+      ...rest,
+      profileImagePath,
+      transcriptPath,
+      currentInterviewRoom: null,
+      applicationStatus: "ACTIVE",
+      interviewStatus: "PENDING",
+      editCount: 0,
+      createdAt: new Date(),
+      updatedAt: null,
+    };
+
+    const result = await candidatesCol.insertOne(candidate);
+
+    this.auditController.audit({
+      ...meta,
+      action: "SUBMIT_CANDIDATE",
+      changes: {
+        before: null,
+        after: {
+          ...candidate,
+          profileImagePath: "[FILE]",
+          transcriptPath: "[FILE]",
+        },
+      },
+      target: {
+        type: "CANDIDATE",
+        id: result.insertedId.toString(),
+      },
+    });
+
     return result;
   }
 

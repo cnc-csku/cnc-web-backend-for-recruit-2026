@@ -17,8 +17,8 @@ export const candidateOpenApi: Record<string, OpenApiDetail> = {
 
   createCandidate: {
     operationId: "createCandidate",
-    summary: "Create candidate",
-    description: "Create a new candidate profile",
+    summary: "Create candidate with files",
+    description: "Create a new candidate profile with profile image and transcript files (multipart/form-data)",
     tags: ["Candidate"],
   },
 

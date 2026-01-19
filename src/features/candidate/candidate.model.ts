@@ -37,8 +37,12 @@ export const InterviewStatus = t.Union([
 export type InterviewStatusStatic = typeof InterviewStatus.static;
 
 export const CandidateModel = {
+  TypeOfDpm,
+  NisitYearParticipated,
+  ReferralSource,
+
   candidate: t.Object({
-    userId: t.String({ minLength: 1 }),
+    // userId: t.String({ minLength: 1 }),
     email: t.String({ minLength: 1 }),
     nisitId: t.String({ minLength: 10, maxLength: 10 }),
     firstName: t.String({ minLength: 1 }),
@@ -127,6 +131,37 @@ export const CandidateModel = {
   changeSlotBody: t.Object({
     newSlotId: t.String({ minLength: 24, maxLength: 24 }),
   }),
+
+  // Schema for multipart submission (files are handled separately by Elysia)
+  createCandidateMultipartBody: t.Object({
+    userId: t.String({ minLength: 1 }),
+    email: t.String({ minLength: 1 }),
+    nisitId: t.String({ minLength: 10, maxLength: 10 }),
+    firstName: t.String({ minLength: 1 }),
+    lastName: t.String({ minLength: 1 }),
+    nickName: t.String({ minLength: 1 }),
+    bio: t.String(),
+    typeOfDpm: TypeOfDPM,
+    nisitYearParticipated: NisitYearParticipated,
+    gradeGPAX: t
+      .Transform(t.String())
+      .Decode((val) => parseFloat(val))
+      .Encode((val) => val.toFixed(2)),
+    address: t.String(),
+    mbti: t.String(),
+    phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
+    socialContact: t.String(),
+    github: t.String(),
+    interviewSlotId: t.Optional(t.String()),
+    referralSource: ReferralSource,
+    projectExperience: t.String(),
+    clubs: t.String(),
+    interests: t.String(),
+    hobbies: t.String(),
+    whyCnc: t.String(),
+    expected: t.String(),
+    tools: t.String(),
+  }),
 };
 
 export type Candidate = typeof CandidateModel.candidate.static;
@@ -136,5 +171,8 @@ export type CandidateWithInterviewQuestions = WithId<Candidate> & {
 
 export type CreateCandidateBody =
   typeof CandidateModel.createCandidateBody.static;
+
+export type CreateCandidateMultipartBody =
+  typeof CandidateModel.createCandidateMultipartBody.static;
 
 export const candidatesCol = (await db()).collection<Candidate>("candidates");
