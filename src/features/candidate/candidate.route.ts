@@ -12,12 +12,14 @@ import { auditPlugin } from "../auditLog/audit.plugin";
 import { candidateOpenApi } from "./candidate.openapi";
 import { client } from "../../core/db";
 import { CandidateNotFoundError } from "../../core/errors";
+import { authPlugin } from "../auth/auth.plugin";
 
 //TODO: get profile from auth
 //TODO: Middleware rate limit
 
 export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .use(auditPlugin)
+  .use(authPlugin)
   .decorate("candidateController", candidateController)
   .decorate("interviewSlotController", interviewSlotController)
   .decorate("candidateWithdrawalService", candidateWithdrawalService)
@@ -25,8 +27,8 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .decorate("storageController", storageController)
   .get(
     "/check",
-    async ({ candidateController }) => {
-      const email = "From auth";
+    async ({ candidateController, auth }) => {
+      const email = auth.actor.email;
       return { submitted: await candidateController.isSubmitted(email) };
     },
     {
