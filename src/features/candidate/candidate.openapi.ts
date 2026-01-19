@@ -1,6 +1,13 @@
 import { OpenApiDetail } from "../../../shared/shared.model";
 
 export const candidateOpenApi: Record<string, OpenApiDetail> = {
+  checkCandidate: {
+    operationId: "checkCandidate",
+    summary: "Check candidate",
+    description: "To check is the user is already submitted candidate",
+    tags: ["Candidate"],
+  },
+
   getCandidate: {
     operationId: "getCandidate",
     summary: "Get candidate",

@@ -18,6 +18,10 @@ import { ClientSession } from "mongodb";
 export class CandidateController {
   constructor(private service: CandidateService) {}
 
+  async isSubmitted(email: string) {
+    return (await this.service.findByEmail(email)) !== null;
+  }
+
   async getCandidate(id: string, session?: ClientSession) {
     return await this.service.findById(id, session);
   }

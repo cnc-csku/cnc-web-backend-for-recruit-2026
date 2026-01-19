@@ -7,6 +7,7 @@ import {
   UpdateCandidateBody,
   UpdateCandidateBodySchema,
   CandidateModel,
+  ApplicationStatus,
 } from "./candidate.model";
 import {
   AlreadyHasSlotError,
@@ -62,7 +63,10 @@ export class CandidateService {
   }
 
   async findByEmail(email: string): Promise<Candidate | null> {
-    return await candidatesCol.findOne({ email: email });
+    return await candidatesCol.findOne({
+      email: email,
+      applicationStatus: "ACTIVE",
+    });
   }
 
   //only include interviewquestion when lookup by id

@@ -24,6 +24,16 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .decorate("candidateFileHandler", candidateFileHandler)
   .decorate("storageController", storageController)
   .get(
+    "/check",
+    async ({ candidateController }) => {
+      const email = "From auth";
+      return { submitted: await candidateController.isSubmitted(email) };
+    },
+    {
+      detail: candidateOpenApi.getCandidate,
+    }
+  )
+  .get(
     "/:candidateId",
     async ({ params, candidateController }) => {
       return await candidateController.getCandidate(params.candidateId);
@@ -104,7 +114,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   )
   .post(
     "/submit",
-    async ({ body, candidateController,candidateFileHandler, meta }) => {
+    async ({ body, candidateController, candidateFileHandler, meta }) => {
       const session = (await client()).startSession();
       const uploadedKeys: string[] = [];
       let insertedId: string = "";
