@@ -4,6 +4,10 @@ import {
   candidatesCol,
   CandidateWithInterviewQuestions,
   InterviewStatusStatic,
+  UpdateCandidateBody,
+  UpdateCandidateBodySchema,
+  CandidateModel,
+  ApplicationStatus,
 } from "./candidate.model";
 import {
   AlreadyHasSlotError,
@@ -22,22 +26,47 @@ import { AuditMeta } from "../auditLog/audit.model";
 import { buildProjection } from "../../utils/buildProjection";
 import { AuditUtils } from "../auditLog/audit.utils";
 import { InterviewSlotController } from "../InterviewSlot/interviewSlot.controller";
+import { pickSafe } from "../../utils/pickSafe";
+import { CandidateFileHandler } from "./candidate.file";
 
 const MAX_EDIT_ALLOW = 99999;
 
 export class CandidateService {
   constructor(
     private interviewQuestionController: InterviewQuestionController,
+    private candidateFileHandler: CandidateFileHandler,
     private formController: FormController,
     private auditController: AuditLogController
   ) {}
 
   async getAlls(): Promise<Candidate[]> {
-    return await candidatesCol.find({}).toArray();
+    const candidates = await candidatesCol
+      .find(
+        {},
+        {
+          projection: {
+            _id: 1,
+            email: 1,
+            firstName: 1,
+            lastName: 1,
+            nickName: 1,
+            editCount: 1,
+            phoneNumber: 1,
+            applicationStatus: 1,
+            interviewStatus: 1,
+            currentInterviewRoom: 1,
+          },
+        }
+      )
+      .toArray();
+    return candidates;
   }
 
   async findByEmail(email: string): Promise<Candidate | null> {
-    return await candidatesCol.findOne({ email: email });
+    return await candidatesCol.findOne({
+      email: email,
+      applicationStatus: "ACTIVE",
+    });
   }
 
   //only include interviewquestion when lookup by id
@@ -54,17 +83,32 @@ export class CandidateService {
     const interviewQ = await this.interviewQuestionController.getByCandidateId(
       id
     );
-    return { ...candidate, interviewQuestions: interviewQ };
+    const profileUrl = candidate.profileImageKey
+      ? await this.candidateFileHandler.getPresignedUrl(
+          candidate.profileImageKey
+        )
+      : null;
+    const transcriptUrl = candidate.transcriptKey
+      ? await this.candidateFileHandler.getPresignedUrl(candidate.transcriptKey)
+      : null;
+    return {
+      ...candidate,
+      interviewQuestions: interviewQ,
+      profileImageKey: profileUrl,
+      transcriptKey: transcriptUrl,
+    };
   }
 
   async updateCandidate(
     candidateId: string,
-    data: Partial<CreateCandidateBody>,
+    data: Partial<UpdateCandidateBody>,
     isAdmin: boolean = false,
-    meta: AuditMeta
+    meta: AuditMeta,
+    session?: ClientSession
   ) {
     if (!isAdmin) await this.formController.assertEditAllowed();
-    const exist = await this.findById(candidateId);
+    const exist = await this.findById(candidateId, session);
+
     if (!exist) throw new CandidateNotFoundError();
     if (exist.editCount >= MAX_EDIT_ALLOW && !isAdmin)
       throw new EditLimitExceededError();
@@ -74,18 +118,20 @@ export class CandidateService {
 
     const _id = new ObjectId(candidateId);
 
-    const before = await candidatesCol.findOne({ _id });
+    const before = await candidatesCol.findOne({ _id }, { session });
 
-    const { email, ...rest } = data;
+    const { email, interviewSlotId, ...rest } = data;
+    const safeData = pickSafe(rest, UpdateCandidateBodySchema);
+
     const result = await candidatesCol.findOneAndUpdate(
       { _id },
       {
-        $set: { ...rest, updatedAt: new Date() },
+        $set: { ...safeData, updatedAt: new Date() },
         $inc: {
           editCount: isAdmin ? 0 : 1,
         },
       },
-      { returnDocument: "after" }
+      { returnDocument: "after", session }
     );
     if (!result) return null;
 
@@ -147,15 +193,25 @@ export class CandidateService {
     return result;
   }
 
-  async createCandidate(data: CreateCandidateBody, meta: AuditMeta) {
+  async createCandidate(
+    data: CreateCandidateBody,
+    meta: AuditMeta,
+    session?: ClientSession
+  ) {
     await this.formController.assertSubmissionAllowed();
 
     const exist = await this.findByEmail(data.email);
     if (exist) throw new DuplicateCandidateError();
     const { interviewSlotId, ...rest } = data;
+    const safe = pickSafe(
+      rest,
+      CandidateModel.createCandidateBody
+    ) as CreateCandidateBody;
 
     const candidate: Candidate = {
-      ...rest,
+      ...safe,
+      transcriptKey: "upload pending",
+      profileImageKey: "upload pending",
       currentInterviewRoom: null,
       applicationStatus: "ACTIVE",
       interviewStatus: "PENDING",
@@ -163,7 +219,7 @@ export class CandidateService {
       createdAt: new Date(),
       updatedAt: null,
     };
-    const result = await candidatesCol.insertOne(candidate);
+    const result = await candidatesCol.insertOne(candidate, { session });
 
     this.auditController.audit({
       ...meta,
@@ -307,7 +363,7 @@ export class CandidateService {
 
     const result = await candidatesCol.updateOne(
       { _id, applicationStatus: { $ne: "WITHDRAWN" } },
-      { $set: { applicationStatus: "WITHDRAWN", userId: "", email: "" } },
+      { $set: { applicationStatus: "WITHDRAWN", email: "" } },
       session ? { session } : undefined
     );
 

@@ -1,5 +1,19 @@
+import { CreateBucketCommand, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { formCol } from "../features/form/form.model";
 import { db } from "./db";
+import { s3 } from "./storage/storage.client";
+
+async function ensureBucket(bucket: string) {
+  try {
+    await s3.send(new HeadBucketCommand({ Bucket: bucket }));
+  } catch (err: any) {
+    if (err.$metadata?.httpStatusCode === 404) {
+      await s3.send(new CreateBucketCommand({ Bucket: bucket }));
+    } else {
+      throw err;
+    }
+  }
+}
 
 export async function bootstrapFormConfig() {
   await formCol.updateOne(
@@ -16,4 +30,6 @@ export async function bootstrapFormConfig() {
     },
     { upsert: true },
   );
+
+  await ensureBucket("uploads");
 }

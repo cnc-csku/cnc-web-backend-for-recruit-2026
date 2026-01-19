@@ -8,12 +8,16 @@ import { ip } from "elysia-ip";
 import { cors } from "@elysiajs/cors";
 import { rateLimit } from "elysia-rate-limit";
 import { helmet } from "elysia-helmet";
+import { config } from "./core/config";
+import openapi from "@elysiajs/openapi";
+import { openapiConfig } from "./core/openapi";
 import { authRoute } from "./features/auth/auth.route";
 import jwt from "@elysiajs/jwt";
 import { authPlugin } from "./features/auth/auth.plugin";
 
 await bootstrapFormConfig();
-export const app = new Elysia({ aot: false })
+export const app = new Elysia()
+  .use(config.isDev ? openapi(openapiConfig) : undefined)
   .use(ip())
   .use(rateLimit({ duration: 60000, max: 100 })) // allow 100 request per 1 minute
   .use(helmet())
@@ -45,6 +49,8 @@ export const app = new Elysia({ aot: false })
       description: "Check is server is good to go",
     },
   })
+
+  // .use(authRoute)
   .use(authRoute)
   // example auth helper
   // .get("/me", ({ auth }) => auth)

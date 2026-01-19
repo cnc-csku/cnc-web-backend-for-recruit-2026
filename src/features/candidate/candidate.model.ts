@@ -18,9 +18,9 @@ export const InterviewRoom = t.Union([
 export const TypeOfDPM = t.Union([t.Literal("NORMAL"), t.Literal("SPECIAL")]);
 
 export const NisitYearParticipated = t.Union([
-  t.Literal(83),
-  t.Literal(84),
-  t.Literal(85),
+  t.Literal("83"),
+  t.Literal("84"),
+  t.Literal("85"),
 ]);
 
 export const ApplicationStatus = t.Union([
@@ -36,9 +36,55 @@ export const InterviewStatus = t.Union([
 
 export type InterviewStatusStatic = typeof InterviewStatus.static;
 
+const CreateCandidateBodySchema = t.Object(
+  {
+    email: t.String({ minLength: 1 }),
+    nisitId: t.String({ minLength: 10, maxLength: 10 }),
+    firstName: t.String({ minLength: 1 }),
+    lastName: t.String({ minLength: 1 }),
+    nickName: t.String({ minLength: 1 }),
+    bio: t.String(),
+    typeOfDpm: TypeOfDPM,
+    nisitYearParticipated: NisitYearParticipated,
+    gradeGPAX: t
+      .Transform(t.String())
+      .Decode((val) => parseFloat(val))
+      .Encode((val) => val.toFixed(2)),
+    profileImageFile: t.File({ format: "image/*" }),
+    transcriptFile: t.File({ format: "image/*" }),
+    address: t.String(),
+    mbti: t.String(),
+    phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
+    socialContact: t.String(),
+    github: t.String(),
+    interviewSlotId: t.Optional(t.String()),
+    referralSource: ReferralSource,
+    projectExperience: t.String(),
+    clubs: t.String(),
+    interests: t.String(),
+    hobbies: t.String(),
+    whyCnc: t.String(),
+    expected: t.String(),
+    tools: t.String(),
+  },
+  { additionalProperties: false }
+);
+
+export const UpdateCandidateBodySchema = t.Intersect(
+  [
+    t.Partial(
+      t.Omit(CreateCandidateBodySchema, ["profileImageFile", "transcriptFile"])
+    ),
+    t.Object({
+      profileImageKey: t.Optional(t.Nullable(t.String())),
+      transcriptKey: t.Optional(t.Nullable(t.String())),
+    }),
+  ],
+  { additionalProperties: false }
+);
+
 export const CandidateModel = {
   candidate: t.Object({
-    userId: t.String({ minLength: 1 }),
     email: t.String({ minLength: 1 }),
     nisitId: t.String({ minLength: 10, maxLength: 10 }),
     firstName: t.String({ minLength: 1 }),
@@ -52,8 +98,8 @@ export const CandidateModel = {
       maximum: 4,
       multipleOf: 0.01,
     }),
-    profileImagePath: t.String(),
-    transcriptPath: t.String(),
+    profileImageKey: t.Nullable(t.String()),
+    transcriptKey: t.Nullable(t.String()),
     address: t.String(),
     mbti: t.String(),
     phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
@@ -81,41 +127,9 @@ export const CandidateModel = {
     updatedAt: t.Nullable(t.Date()),
   }),
 
-  createCandidateBody: t.Object({
-    userId: t.String({ minLength: 1 }),
-    email: t.String({ minLength: 1 }),
-    nisitId: t.String({ minLength: 10, maxLength: 10 }),
-    firstName: t.String({ minLength: 1 }),
-    lastName: t.String({ minLength: 1 }),
-    nickName: t.String({ minLength: 1 }),
-    bio: t.String(),
-    typeOfDpm: TypeOfDPM,
-    nisitYearParticipated: NisitYearParticipated,
-    gradeGPAX: t
-      .Transform(t.String())
-      .Decode((val) => parseFloat(val))
-      .Encode((val) => val.toFixed(2)),
-    profileImagePath: t.String(),
-    transcriptPath: t.String(),
-    address: t.String(),
-    mbti: t.String(),
-    phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
+  createCandidateBody: CreateCandidateBodySchema,
 
-    socialContact: t.String(),
-    github: t.String(),
-
-    interviewSlotId: t.Optional(t.String()),
-
-    //questions answer
-    referralSource: ReferralSource,
-    projectExperience: t.String(),
-    clubs: t.String(),
-    interests: t.String(),
-    hobbies: t.String(),
-    whyCnc: t.String(),
-    expected: t.String(),
-    tools: t.String(),
-  }),
+  updateCandidateBody: UpdateCandidateBodySchema,
   assignSlotBody: t.Object({
     slotId: t.String({ minLength: 24, maxLength: 24 }),
   }),
@@ -132,9 +146,13 @@ export const CandidateModel = {
 export type Candidate = typeof CandidateModel.candidate.static;
 export type CandidateWithInterviewQuestions = WithId<Candidate> & {
   interviewQuestions: InterViewQuestion[];
+  
 };
 
 export type CreateCandidateBody =
   typeof CandidateModel.createCandidateBody.static;
+
+export type UpdateCandidateBody =
+  typeof CandidateModel.updateCandidateBody.static;
 
 export const candidatesCol = (await db()).collection<Candidate>("candidates");

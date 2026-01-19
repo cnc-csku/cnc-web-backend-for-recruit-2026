@@ -32,7 +32,6 @@ export class CandidateWithdrawalService {
           throw new AlreadyWithdrawnError();
         }
 
-        // 1. unassign slot if exists
         if (candidate.interviewSlotId) {
           await this.interviewSlotController.unAssignCandidateFromSlot(
             candidateId,

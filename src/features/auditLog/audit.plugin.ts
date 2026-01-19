@@ -7,7 +7,6 @@ export const auditPlugin = new Elysia({ name: "meta" })
   .derive({ as: "global" }, ({ ip }): { meta: AuditMeta } => ({
     meta: {
       actor: {
-        userId: "placeHolder",
         email: "placeHolder",
       },
       ip: ip,

@@ -1,6 +1,10 @@
 import { Elysia, t } from "elysia";
 import { CandidateService } from "./candidate.service";
-import { CreateCandidateBody, InterviewStatusStatic } from "./candidate.model";
+import {
+  CreateCandidateBody,
+  InterviewStatusStatic,
+  UpdateCandidateBody,
+} from "./candidate.model";
 import {
   CandidateNotFoundError,
   DomainError,
@@ -14,6 +18,10 @@ import { ClientSession } from "mongodb";
 export class CandidateController {
   constructor(private service: CandidateService) {}
 
+  async isSubmitted(email: string) {
+    return (await this.service.findByEmail(email)) !== null;
+  }
+
   async getCandidate(id: string, session?: ClientSession) {
     return await this.service.findById(id, session);
   }
@@ -24,16 +32,18 @@ export class CandidateController {
 
   async updateCandidate(
     candidateId: string,
-    data: Partial<CreateCandidateBody>,
+    data: Partial<UpdateCandidateBody>,
     isAdmin: boolean = false,
-    meta: AuditMeta
+    meta: AuditMeta,
+    session?: ClientSession
   ) {
     try {
       return await this.service.updateCandidate(
         candidateId,
         data,
         isAdmin,
-        meta
+        meta,
+        session
       );
     } catch (err) {
       if (err instanceof DomainError) {
@@ -62,9 +72,13 @@ export class CandidateController {
     }
   }
 
-  async createCandidate(data: CreateCandidateBody, meta: AuditMeta) {
+  async createCandidate(
+    data: CreateCandidateBody,
+    meta: AuditMeta,
+    session?: ClientSession
+  ) {
     try {
-      return await this.service.createCandidate(data, meta);
+      return await this.service.createCandidate(data, meta, session);
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
