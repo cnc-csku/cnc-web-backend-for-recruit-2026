@@ -160,3 +160,11 @@ export class Forbidden extends DomainError {
     super(message);
   }
 }
+
+export class UserNotFoundError extends DomainError {
+  statusCode = 404;
+  code = "USER_NOT_FOUND";
+  constructor(message = "Forbidden") {
+    super(message);
+  }
+}

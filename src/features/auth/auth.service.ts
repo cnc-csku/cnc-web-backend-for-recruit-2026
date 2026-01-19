@@ -1,6 +1,7 @@
 import { OAuth2Client } from "google-auth-library";
 import type { Role, User } from "./auth.model";
 import { usersCol } from "./auth.model";
+import { UserNotFoundError } from "../../core/errors";
 
 export type GoogleLoginInput = {
   id_token: string;
@@ -90,6 +91,12 @@ export class AuthService {
       role: role,
       createdAt: new Date(),
     });
+  }
+
+  async updateUserRole(email: string, newRole: Role) {
+    const exist = this.findUserByEmail(email);
+    if (!exist) throw UserNotFoundError;
+    return await usersCol.updateOne({ email }, { $set: { role: newRole } });
   }
 
   async findUserByEmail(email: string) {

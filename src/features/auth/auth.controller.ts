@@ -16,6 +16,10 @@ export class AuthController {
   async createUser(email: string, role: Role) {
     return await this.service.createUser(email, role);
   }
+
+  async updateUserRole(email: string, newRole: Role) {
+    return await this.service.updateUserRole(email, newRole);
+  }
   async findUserByEmail(email: string) {
     return await this.service.findUserByEmail(email);
   }
