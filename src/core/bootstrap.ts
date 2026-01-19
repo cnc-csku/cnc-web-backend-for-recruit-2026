@@ -25,7 +25,7 @@ async function ensureAdminUser() {
       const result = await authController.createUser(email, "Admin");
       user = {
         _id: result.insertedId,
-        role: "User",
+        role: "Admin",
         email: email,
         createdAt: new Date(),
       };

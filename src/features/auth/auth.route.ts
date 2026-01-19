@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
+import { authOpenApi } from "./auth.openapi";
 
 const authService = new AuthService({
   googleClientId: process.env.GOOGLE_CLIENT_ID!,
@@ -22,7 +23,7 @@ export const authRoute = new Elysia({ prefix: "/auth" })
     return {
       user:auth.user
     }
-  });
+  },{detail:authOpenApi.me});
 // .post('/google', async ({ body, jwt, set, authController }) => {
 //   try {
 //     const result = await authController.googleLogin(body, (p) => jwt.sign(p))

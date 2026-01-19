@@ -34,7 +34,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       return { submitted: result !== null, candidateId: result?._id };
     },
     {
-      detail: candidateOpenApi.getCandidate,
+      detail: candidateOpenApi.checkCandidate,
     },
   )
   .get(
