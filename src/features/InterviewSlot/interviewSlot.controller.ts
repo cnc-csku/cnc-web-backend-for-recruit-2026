@@ -21,7 +21,7 @@ export class InterviewSlotController {
   async assignCandidateToSlot(
     candidateId: string,
     slotId: string,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.addCandidateToSlot(candidateId, slotId, meta);
@@ -29,7 +29,6 @@ export class InterviewSlotController {
       if (err instanceof DomainError) {
         throw err;
       }
-      console.log(err);
 
       throw new Error("Failed to add candidate");
     }
@@ -38,20 +37,18 @@ export class InterviewSlotController {
   async unAssignCandidateFromSlot(
     candidateId: string,
     slotId: string,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.removeCandidateFromSlot(
         candidateId,
         slotId,
-        meta
+        meta,
       );
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
       }
-      console.log(err);
-
       throw new Error("Failed to remove candidate");
     }
   }
@@ -59,20 +56,18 @@ export class InterviewSlotController {
   async changeCandidateAssignedSlot(
     candidateId: string,
     slotId: string,
-    meta: AuditMeta
+    meta: AuditMeta,
   ) {
     try {
       return await this.service.removeCandidateFromSlot(
         candidateId,
         slotId,
-        meta
+        meta,
       );
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
       }
-      console.log(err);
-
       throw new Error("Failed to remove candidate");
     }
   }

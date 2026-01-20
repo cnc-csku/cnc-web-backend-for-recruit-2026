@@ -3,6 +3,7 @@ import { jwt } from "@elysiajs/jwt";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { authOpenApi } from "./auth.openapi";
+import { authGuard } from "./auth.guard";
 
 const authService = new AuthService({
   googleClientId: process.env.GOOGLE_CLIENT_ID!,
@@ -11,6 +12,7 @@ const authService = new AuthService({
 const authController = new AuthController(authService);
 
 export const authRoute = new Elysia({ prefix: "/auth" })
+  .use(authGuard)
   .decorate("authService", authService)
   .decorate("authController", authController)
   .get(

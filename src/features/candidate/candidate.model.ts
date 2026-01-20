@@ -38,7 +38,6 @@ export type InterviewStatusStatic = typeof InterviewStatus.static;
 
 const CreateCandidateBodySchema = t.Object(
   {
-    email: t.String({ minLength: 1 }),
     nisitId: t.String({ minLength: 10, maxLength: 10 }),
     firstName: t.String({ minLength: 1 }),
     lastName: t.String({ minLength: 1 }),
@@ -67,20 +66,20 @@ const CreateCandidateBodySchema = t.Object(
     expected: t.String(),
     tools: t.String(),
   },
-  { additionalProperties: false }
+  { additionalProperties: false },
 );
 
 export const UpdateCandidateBodySchema = t.Intersect(
   [
     t.Partial(
-      t.Omit(CreateCandidateBodySchema, ["profileImage", "transcript"])
+      t.Omit(CreateCandidateBodySchema, ["profileImage", "transcript"]),
     ),
     t.Object({
       profileImageKey: t.Optional(t.Nullable(t.String())),
       transcriptKey: t.Optional(t.Nullable(t.String())),
     }),
   ],
-  { additionalProperties: false }
+  { additionalProperties: false },
 );
 
 export const CandidateModel = {
@@ -146,7 +145,6 @@ export const CandidateModel = {
 export type Candidate = typeof CandidateModel.candidate.static;
 export type CandidateWithInterviewQuestions = WithId<Candidate> & {
   interviewQuestions: InterViewQuestion[];
-  
 };
 
 export type CreateCandidateBody =

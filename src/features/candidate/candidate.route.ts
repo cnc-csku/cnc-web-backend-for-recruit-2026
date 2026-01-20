@@ -127,13 +127,15 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   )
   .post(
     "/submit",
-    async ({ body, candidateController, candidateFileHandler, meta }) => {
+    async ({ body, candidateController, candidateFileHandler, meta, auth }) => {
       const session = (await client()).startSession();
       const uploadedKeys: string[] = [];
       let insertedId: string = "";
+      const email = auth.user.email;
       try {
         await session.withTransaction(async () => {
           const result = await candidateController.createCandidate(
+            email,
             body,
             meta,
             session,

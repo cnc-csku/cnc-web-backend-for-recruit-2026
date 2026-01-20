@@ -14,6 +14,7 @@ import { openapiConfig } from "./core/openapi";
 import { authRoute } from "./features/auth/auth.route";
 import { authGuard, requireRole } from "./features/auth/auth.guard";
 import { bootstrap } from "./core/bootstrap";
+import { logger } from "./core/logger";
 
 await bootstrap();
 export const app = new Elysia()
@@ -61,6 +62,10 @@ export const app = new Elysia()
         message: error.message,
       };
     } else {
-      console.error(error);
+      if (error instanceof Error) {
+        logger.error(error.message);
+      } else {
+        console.error(error);
+      }
     }
   });

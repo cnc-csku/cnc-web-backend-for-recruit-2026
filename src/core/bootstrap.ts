@@ -4,8 +4,9 @@ import { db } from "./db";
 import { s3 } from "./storage/storage.client";
 import { usersCol } from "../features/auth/auth.model";
 import { authController } from "../lib/controllers";
+import { logger } from "./logger";
 
-const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th"];
+const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th", "wachirawich.s@ku.th"];
 async function ensureBucket(bucket: string) {
   try {
     await s3.send(new HeadBucketCommand({ Bucket: bucket }));
@@ -32,8 +33,7 @@ async function ensureAdminUser() {
     }
     if (user.role !== "Admin") {
       await authController.updateUserRole(email, "Admin");
-
-      console.log(`⬆️ User promoted to admin: ${email}`);
+      logger.info(`⬆️ User promoted to admin: ${email}`);
     }
   }
 }
@@ -54,21 +54,6 @@ export async function bootstrap() {
     { upsert: true },
   );
 
-  await usersCol.updateOne(
-    { _id: "FORM_CONFIG" },
-    {
-      $setOnInsert: {
-        _id: "FORM_CONFIG",
-        allowSubmit: false,
-        opensAt: new Date("2099-01-01T00:00:00Z").toISOString(),
-        closesAt: new Date("2099-01-02T00:00:00Z").toISOString(),
-        editableUntil: new Date("2099-01-02T00:00:00Z").toISOString(),
-        createdAt: new Date().toISOString(),
-      },
-    },
-    { upsert: true },
-  );
   await ensureAdminUser();
-
   await ensureBucket("uploads");
 }

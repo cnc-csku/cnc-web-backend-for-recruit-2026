@@ -1,9 +1,9 @@
 import { MongoClient, Db } from "mongodb";
 import { config } from "./config";
+import { logger } from "./logger";
 
 const uri = config.mongo.uri;
 const dbName = config.mongo.dbName;
-console.log(uri);
 
 if (!uri) {
   throw new Error("MONGO_URI is not defined");
@@ -23,21 +23,21 @@ export async function connectToDatabase(): Promise<{
   try {
     clientMongo = new MongoClient(uri);
 
-    console.log("[DB] Connecting to MongoDB...");
+    logger.info("[DB] Connecting to MongoDB uri", uri);
     await clientMongo.connect();
 
     database = clientMongo.db(dbName);
-    console.log("[DB] Connected to MongoDB:", dbName);
+    logger.info("[DB] ✅ Connected to MongoDB:", dbName);
 
     clientMongo.on("close", () => {
-      console.error("[DB] MongoDB connection closed");
+      logger.error("[DB] MongoDB connection closed");
       database = null;
       clientMongo = null;
     });
 
     return { database, client: clientMongo };
   } catch (err) {
-    console.error("[DB] Failed to connect to MongoDB");
+    logger.error("[DB] Failed to connect to MongoDB");
     console.error(err);
     clientMongo = null;
     database = null;

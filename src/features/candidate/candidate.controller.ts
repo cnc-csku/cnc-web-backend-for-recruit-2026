@@ -58,7 +58,7 @@ export class CandidateController {
     data: Partial<UpdateCandidateBody>,
     isAdmin: boolean = false,
     meta: AuditMeta,
-    session?: ClientSession
+    session?: ClientSession,
   ) {
     const candidate = await this.service.findByEmail(email);
     if (!candidate) {
@@ -69,7 +69,7 @@ export class CandidateController {
       data,
       isAdmin,
       meta,
-      session
+      session,
     );
   }
 
@@ -93,12 +93,13 @@ export class CandidateController {
   }
 
   async createCandidate(
+    email: string,
     data: CreateCandidateBody,
     meta: AuditMeta,
     session?: ClientSession,
   ) {
     try {
-      return await this.service.createCandidate(data, meta, session);
+      return await this.service.createCandidate(email, data, meta, session);
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;

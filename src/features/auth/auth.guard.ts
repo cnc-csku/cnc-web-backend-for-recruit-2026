@@ -26,12 +26,10 @@ export const authGuard = new Elysia({ name: "guard" })
     }): Promise<{ auth: AuthContextValue }> => {
       const token = AuthUtils.getBearerToken(headers?.authorization);
       if (!token) throw new Unauthorized();
-
       const payload = await decode({
         token,
         secret: process.env.NEXTAUTH_SECRET!,
       });
-
       if (!payload) {
         throw new Unauthorized();
       }

@@ -121,7 +121,7 @@ export class CandidateService {
 
     const before = await candidatesCol.findOne({ _id }, { session });
 
-    const { email, interviewSlotId, ...rest } = data;
+    const { interviewSlotId, ...rest } = data;
     const safeData = pickSafe(rest, UpdateCandidateBodySchema);
 
     const result = await candidatesCol.findOneAndUpdate(
@@ -195,13 +195,14 @@ export class CandidateService {
   }
 
   async createCandidate(
+    email: string,
     data: CreateCandidateBody,
     meta: AuditMeta,
     session?: ClientSession,
   ) {
     await this.formController.assertSubmissionAllowed();
 
-    const exist = await this.findByEmail(data.email);
+    const exist = await this.findByEmail(email);
     if (exist) throw new DuplicateCandidateError();
     const { interviewSlotId, ...rest } = data;
     const safe = pickSafe(
@@ -211,6 +212,7 @@ export class CandidateService {
 
     const candidate: Candidate = {
       ...safe,
+      email,
       transcriptKey: "upload pending",
       profileImageKey: "upload pending",
       currentInterviewRoom: null,

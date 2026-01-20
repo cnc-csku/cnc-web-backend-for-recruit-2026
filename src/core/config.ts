@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 type NodeEnv = "development" | "production";
 
 const NODE_ENV = (process.env.NODE_ENV || "development") as NodeEnv;
@@ -16,5 +18,5 @@ export const config = {
 };
 
 if (!config.mongo.uri) {
-  throw new Error("MONGO_URI is required");
+  logger.error("MONGO_URI is required");
 }
