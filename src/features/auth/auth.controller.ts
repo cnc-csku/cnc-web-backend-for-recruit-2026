@@ -23,4 +23,8 @@ export class AuthController {
   async findUserByEmail(email: string) {
     return await this.service.findUserByEmail(email);
   }
+
+  async ensureUserByEmail(email: string) {
+    return await this.service.findOrCreateUserByEmail(email);
+  }
 }

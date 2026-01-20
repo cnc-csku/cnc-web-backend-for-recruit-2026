@@ -102,4 +102,22 @@ export class AuthService {
   async findUserByEmail(email: string) {
     return await usersCol.findOne({ email: email });
   }
+
+  async findOrCreateUserByEmail(email: string) {
+    const user = await usersCol.findOneAndUpdate(
+      { email },
+      {
+        $setOnInsert: {
+          email,
+          role: "User",
+          createdAt: new Date(),
+        },
+      },
+      {
+        upsert: true,
+        returnDocument: "after",
+      },
+    );
+    return user;
+  }
 }

@@ -1,6 +1,6 @@
 import Elysia from "elysia";
 import { AuthContextValue, AuthUtils } from "./auth.utils";
-import { decode } from "next-auth/jwt";
+import { decode, JWT } from "next-auth/jwt";
 import { authController } from "../../lib/controllers";
 import { Forbidden, Unauthorized } from "../../core/errors";
 import { Role } from "./auth.model";
@@ -27,7 +27,7 @@ export const authGuard = new Elysia({ name: "guard" })
       const token = AuthUtils.getBearerToken(headers?.authorization);
       if (!token) throw new Unauthorized();
 
-      let payload;
+      let payload: JWT | null;
 
       try {
         payload = await decode({
@@ -42,26 +42,7 @@ export const authGuard = new Elysia({ name: "guard" })
         throw new Unauthorized();
       }
 
-      let user = await authController.findUserByEmail(payload.email);
-      if (!user) {
-        try {
-          const result = await authController.createUser(payload.email, "User");
-
-          user = {
-            _id: result.insertedId,
-            role: "User",
-            email: payload.email,
-            createdAt: new Date(),
-          };
-        } catch (e: any) {
-          // handle race condition
-          if (e.code === 11000) {
-            user = await authController.findUserByEmail(payload.email);
-          } else {
-            throw e;
-          }
-        }
-      }
+      let user = await authController.ensureUserByEmail(payload.email);
       return { auth: AuthUtils.toAuth(payload, user!) };
     },
   );
