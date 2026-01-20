@@ -29,8 +29,24 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     "/check",
     async ({ candidateController, auth }) => {
       const email = auth.actor.email;
-      
+
       return { submitted: await candidateController.isSubmitted(email) };
+    },
+    {
+      detail: candidateOpenApi.getCandidate,
+    }
+  )
+  .get(
+    "/profile",
+    async ({ candidateController, auth }) => {
+      const email = auth.actor.email;
+      const candidate = await candidateController.getCandidateByEmail(email);
+
+      if (!candidate) {
+        throw new CandidateNotFoundError();
+      }
+
+      return candidate;
     },
     {
       detail: candidateOpenApi.getCandidate,
