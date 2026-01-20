@@ -8,7 +8,11 @@ export const UserModel = {
   user: t.Object({
     email: t.String(),
     role: RoleSchema,
+    ban: t.Boolean(),
     createdAt: t.Date(),
+  }),
+  createAdmin: t.Object({
+    email: t.String(),
   }),
 };
 

@@ -27,4 +27,30 @@ export class AuthController {
   async ensureUserByEmail(email: string) {
     return await this.service.findOrCreateUserByEmail(email);
   }
+
+  async promoteToAdmin(email: string) {
+    //create user first if non exist
+    await this.service.findOrCreateUserByEmail(email);
+    const user = this.service.updateUserRole(email, "Admin");
+    return true;
+  }
+
+  async demoteToAdmin(email: string) {
+    //create user first if non exist
+    await this.service.findOrCreateUserByEmail(email);
+    const user = this.service.updateUserRole(email, "User");
+    return true;
+  }
+
+  async getAll() {
+    return await this.service.getAll();
+  }
+
+  async banUser(email: string) {
+    return await this.service.updateUserBan(email, true);
+  }
+
+  async unBanUser(email: string) {
+    return await this.service.updateUserBan(email, false);
+  }
 }

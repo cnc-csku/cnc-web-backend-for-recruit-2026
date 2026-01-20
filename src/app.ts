@@ -11,7 +11,6 @@ import { helmet } from "elysia-helmet";
 import { config } from "./core/config";
 import openapi from "@elysiajs/openapi";
 import { openapiConfig } from "./core/openapi";
-import { authRoute } from "./features/auth/auth.route";
 import { authGuard, requireRole } from "./features/auth/auth.guard";
 import { bootstrap } from "./core/bootstrap";
 import { logger } from "./core/logger";
@@ -49,7 +48,6 @@ export const app = new Elysia()
     },
   })
   .use(authGuard)
-  .use(authRoute)
   .use(adminRoute)
   .use(candidateRoute)
   .use(formRoute)

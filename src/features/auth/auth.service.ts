@@ -89,8 +89,18 @@ export class AuthService {
     return await usersCol.insertOne({
       email: email,
       role: role,
+      ban: false,
       createdAt: new Date(),
     });
+  }
+
+  async updateUserBan(email: string, banStatus: boolean) {
+    return await usersCol.updateOne(
+      { email },
+      {
+        ban: banStatus,
+      },
+    );
   }
 
   async updateUserRole(email: string, newRole: Role) {
@@ -101,6 +111,10 @@ export class AuthService {
 
   async findUserByEmail(email: string) {
     return await usersCol.findOne({ email: email });
+  }
+
+  async getAll() {
+    return await usersCol.find({}).toArray();
   }
 
   async findOrCreateUserByEmail(email: string) {
