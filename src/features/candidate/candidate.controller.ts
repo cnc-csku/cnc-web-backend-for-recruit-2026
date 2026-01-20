@@ -22,10 +22,6 @@ export class CandidateController {
     return await this.service.findByEmail(email);
   }
 
-  async getCandidateByEmail(email: string) {
-    return await this.service.findByEmail(email);
-  }
-
   async getCandidate(id: string, session?: ClientSession) {
     return await this.service.findById(id, session);
   }

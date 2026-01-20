@@ -62,11 +62,13 @@ export class CandidateService {
     return candidates;
   }
 
-  async findByEmail(email: string): Promise<WithId<Candidate> | null> {
-    return await candidatesCol.findOne({
+  async findByEmail(email: string): Promise<WithId<Candidate>> {
+    const candidate = await candidatesCol.findOne({
       email: email,
       applicationStatus: "ACTIVE",
     });
+    if (!candidate) throw new CandidateNotFoundError();
+    return candidate;
   }
 
   //only include interviewquestion when lookup by id

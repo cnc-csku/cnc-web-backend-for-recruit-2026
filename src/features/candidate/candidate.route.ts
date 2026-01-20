@@ -40,7 +40,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .get(
     "/profile",
     async ({ candidateController, auth }) => {
-      const email = auth.actor.email;
+      const email = auth.user.email;
       const candidate = await candidateController.getCandidateByEmail(email);
 
       if (!candidate) {
@@ -53,31 +53,6 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       detail: candidateOpenApi.checkCandidate,
     },
   )
-  .get(
-    "/profile",
-    async ({ candidateController, auth }) => {
-      const email = auth.actor.email;
-      const candidate = await candidateController.getCandidateByEmail(email);
-
-      if (!candidate) {
-        throw new CandidateNotFoundError();
-      }
-
-      return candidate;
-    },
-    {
-      detail: candidateOpenApi.getCandidate,
-    }
-  )
-  .get(
-    "/:candidateId",
-    async ({ params, candidateController }) => {
-      return await candidateController.getCandidate(params.candidateId);
-    },
-    {
-      detail: candidateOpenApi.getCandidate,
-    },
-  )
   .put(
     "/profile",
     async ({ body, candidateController, meta, auth }) => {
@@ -87,17 +62,18 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       let newTranscriptKey: string | null = null;
       let oldFiles: (string | null)[] = [];
 
-      const email = auth.actor.email;
+      const email = auth.user.email;
       try {
         await session.withTransaction(async () => {
-          const candidate = await candidateController.getCandidateByEmail(email);
+          const candidate =
+            await candidateController.getCandidateByEmail(email);
           if (!candidate) throw new CandidateNotFoundError();
           const id = candidate._id.toString();
 
           if (body.profileImage) {
             const profile = await candidateFileHandler.profileUpload(
               body.profileImage,
-              id
+              id,
             );
 
             newProfileKey = profile.key;
@@ -108,7 +84,7 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
           if (body.transcript) {
             const transcript = await candidateFileHandler.transcriptUpload(
               body.transcript,
-              id
+              id,
             );
             newTranscriptKey = transcript.key;
             oldFiles.push(candidate.transcriptKey);
@@ -168,13 +144,13 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
 
           const transcript = await candidateFileHandler.transcriptUpload(
             body.transcript,
-            insertedId
+            insertedId,
           );
           uploadedKeys.push(transcript.key);
 
           const profile = await candidateFileHandler.profileUpload(
             body.profileImage,
-            insertedId
+            insertedId,
           );
           uploadedKeys.push(profile.key);
 
@@ -215,10 +191,18 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     { detail: candidateOpenApi.deleteCandidate },
   )
   .post(
-    "/:candidateId/withdraw",
-    async ({ params, body, candidateWithdrawalService, meta }) => {
+    "/withdraw",
+    async ({
+      params,
+      auth,
+      candidateWithdrawalService,
+      candidateController,
+      meta,
+    }) => {
+      const email = auth.user.email;
+      const candidate = await candidateController.getCandidateByEmail(email);
       return await candidateWithdrawalService.withdraw(
-        params.candidateId,
+        candidate?._id.toString(),
         meta,
       );
     },
@@ -228,10 +212,12 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   //Interview Slot
   // Interview Slot - Assign candidate to a slot
   .post(
-    "/:candidateId/interview-slot",
-    async ({ params, body, interviewSlotController, meta }) => {
+    "/interview-slot",
+    async ({ params, body, interviewSlotController, meta, auth }) => {
+      const email = auth.user.email;
+      const candidate = await candidateController.getCandidateByEmail(email);
       return await interviewSlotController.assignCandidateToSlot(
-        params.candidateId,
+        candidate._id.toString(),
         body.slotId,
         meta,
       );
@@ -243,10 +229,12 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   )
   // Interview Slot - Change selected slot
   .patch(
-    "/:candidateId/interview-slot",
-    async ({ params, body, interviewSlotController, meta }) => {
+    "/interview-slot",
+    async ({ params, body, interviewSlotController, meta, auth }) => {
+      const email = auth.user.email;
+      const candidate = await candidateController.getCandidateByEmail(email);
       return await interviewSlotController.changeCandidateAssignedSlot(
-        params.candidateId,
+        candidate._id.toString(),
         body.slotId,
         meta,
       );
@@ -258,10 +246,12 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   )
   // Interview Slot - Unassign candidate from a slot
   .delete(
-    "/:candidateId/interview-slot",
-    async ({ params, body, interviewSlotController, meta }) => {
+    "/interview-slot",
+    async ({ params, body, interviewSlotController, meta, auth }) => {
+      const email = auth.user.email;
+      const candidate = await candidateController.getCandidateByEmail(email);
       return await interviewSlotController.unAssignCandidateFromSlot(
-        params.candidateId,
+        candidate._id.toString(),
         body.slotId,
         meta,
       );

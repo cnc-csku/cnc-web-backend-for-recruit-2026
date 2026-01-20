@@ -10,7 +10,7 @@ export type AuthUser = {
 
 export type AuthContextValue = {
   user: AuthUser;
-  payload: JWT | null;
+  payload: JWT;
 };
 
 export class AuthUtils {
@@ -31,7 +31,7 @@ export class AuthUtils {
   }
 
   public static toAuth(
-    payload: JWT | null,
+    payload: JWT,
     user: WithId<User>,
   ): AuthContextValue {
     return {

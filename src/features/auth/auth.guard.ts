@@ -27,18 +27,16 @@ export const authGuard = new Elysia({ name: "guard" })
       const token = AuthUtils.getBearerToken(headers?.authorization);
       if (!token) throw new Unauthorized();
 
-      let payload: JWT | null;
+      const payload = await decode({
+        token,
+        secret: process.env.NEXTAUTH_SECRET!,
+      });
 
-      try {
-        payload = await decode({
-          token: token,
-          secret: process.env.NEXTAUTH_SECRET!,
-        });
-      } catch (err) {
+      if (!payload) {
         throw new Unauthorized();
       }
 
-      if (!payload?.sub || !payload?.email) {
+      if (!payload.sub || !payload.email) {
         throw new Unauthorized();
       }
 
