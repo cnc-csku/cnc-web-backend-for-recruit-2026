@@ -6,14 +6,13 @@ import { Forbidden, Unauthorized } from "../../core/errors";
 import { Role } from "./auth.model";
 
 export const requireRole = (role: Role) =>
-  new Elysia({ name: "require" }).onBeforeHandle(
-    { as: "scoped" },
-    async ({ auth }) => {
+  new Elysia({ name: "require" })
+    .use(authGuard)
+    .onBeforeHandle({ as: "scoped" }, async ({ auth }) => {
       if (auth.user.role !== role) {
         throw new Forbidden();
       }
-    },
-  );
+    });
 
 export const authGuard = new Elysia({ name: "guard" })
   .decorate("authController", authController)

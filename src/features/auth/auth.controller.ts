@@ -9,10 +9,6 @@ export const GoogleLoginSchema = z.object({
 export class AuthController {
   constructor(private service: AuthService) {}
 
-  async googleLogin(body: unknown, signJwt: (payload: any) => Promise<string>) {
-    const parsed = GoogleLoginSchema.parse(body);
-    return this.service.loginWithGoogleIdToken(parsed, signJwt);
-  }
   async createUser(email: string, role: Role) {
     return await this.service.createUser(email, role);
   }

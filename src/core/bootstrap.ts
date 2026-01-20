@@ -28,6 +28,7 @@ async function ensureAdminUser() {
         _id: result.insertedId,
         role: "Admin",
         email: email,
+        ban: false,
         createdAt: new Date(),
       };
     }
