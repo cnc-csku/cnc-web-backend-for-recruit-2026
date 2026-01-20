@@ -168,3 +168,19 @@ export class UserNotFoundError extends DomainError {
     super(message);
   }
 }
+
+export class FileTooLargeError extends DomainError {
+  statusCode = 413;
+  code = "FILE_TOO_LARGE";
+  constructor(message = "Uploaded file exceeds the maximum allowed size") {
+    super(message);
+  }
+}
+
+export class InvalidFileTypeError extends DomainError {
+  statusCode = 415;
+  code = "INVALID_FILE_TYPE";
+  constructor(message = "File type is not allow") {
+    super(message);
+  }
+}

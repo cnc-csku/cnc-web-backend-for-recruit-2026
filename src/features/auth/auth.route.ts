@@ -11,12 +11,6 @@ const authService = new AuthService({
 const authController = new AuthController(authService);
 
 export const authRoute = new Elysia({ prefix: "/auth" })
-  .use(
-    jwt({
-      name: "jwt",
-      secret: process.env.JWT_SECRET!,
-    }),
-  )
   .decorate("authService", authService)
   .decorate("authController", authController)
   .get(

@@ -1,5 +1,6 @@
 import { randomUUIDv7 } from "bun";
 import { StorageController } from "../../core/storage/storage.controller";
+import { FileTooLargeError, InvalidFileTypeError } from "../../core/errors";
 
 export interface UploadResult {
   key: string;
@@ -32,23 +33,22 @@ export class CandidateFileHandler {
   private async _upload(
     file: File,
     candidateId: string,
-    type: "profile" | "transcript"
+    type: "profile" | "transcript",
   ): Promise<UploadResult> {
     // Profile only allows images, transcript allows images and PDFs
-    const allowedPrefix = type === "transcript"
-      ? ["image/", "application/pdf"]
-      : "image/";
+    const allowedPrefix =
+      type === "transcript" ? ["image/", "application/pdf"] : "image/";
 
     const isValidType = Array.isArray(allowedPrefix)
-      ? allowedPrefix.some(prefix => file.type.startsWith(prefix))
+      ? allowedPrefix.some((prefix) => file.type.startsWith(prefix))
       : file.type.startsWith(allowedPrefix);
 
     if (!isValidType) {
-      throw new Error(`Invalid ${type} file type`);
+      throw new InvalidFileTypeError();
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      throw new Error("File too large");
+      throw new FileTooLargeError();
     }
 
     const ext = file.type.split("/")[1];
