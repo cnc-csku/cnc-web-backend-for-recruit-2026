@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  CNC-Recruite-Backend-API:
+  cnc-recruite-backend-api:
     build: .
     container_name: CNC-Recruite-Backend-API
     ports:
@@ -10,6 +10,7 @@ services:
       - .env.prod
     depends_on:
       - mongo
+      - minio
 
   mongo:
     image: mongo:7
@@ -40,5 +41,21 @@ services:
     entrypoint: ["bash", "/scripts/mongo-init.sh"]
     restart: "no"
 
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data/minio
+    env_file:
+      - .env.prod
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+    command: server /data/minio --console-address ":9001"
+
 volumes:
   mongo-data:
+  minio-data:

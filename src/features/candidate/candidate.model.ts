@@ -50,8 +50,8 @@ const CreateCandidateBodySchema = t.Object(
       .Transform(t.String())
       .Decode((val) => parseFloat(val))
       .Encode((val) => val.toFixed(2)),
-    profileImageFile: t.File({ format: "image/*" }),
-    transcriptFile: t.File({ format: "image/*" }),
+    profileImage: t.File({ format: "image/*" }),
+    transcript: t.File({ format: ["image/*", "application/pdf"] }),
     address: t.String(),
     mbti: t.String(),
     phoneNumber: t.String({ minLength: 9, maxLength: 10 }),
@@ -73,7 +73,7 @@ const CreateCandidateBodySchema = t.Object(
 export const UpdateCandidateBodySchema = t.Intersect(
   [
     t.Partial(
-      t.Omit(CreateCandidateBodySchema, ["profileImageFile", "transcriptFile"])
+      t.Omit(CreateCandidateBodySchema, ["profileImage", "transcript"])
     ),
     t.Object({
       profileImageKey: t.Optional(t.Nullable(t.String())),

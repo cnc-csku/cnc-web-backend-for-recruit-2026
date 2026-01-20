@@ -22,6 +22,10 @@ export class CandidateController {
     return await this.service.findByEmail(email);
   }
 
+  async getCandidateByEmail(email: string) {
+    return await this.service.findByEmail(email);
+  }
+
   async getCandidate(id: string, session?: ClientSession) {
     return await this.service.findById(id, session);
   }
@@ -51,6 +55,26 @@ export class CandidateController {
       }
       throw new Error("Failed to update candidate");
     }
+  }
+
+  async updateCandidateByEmail(
+    email: string,
+    data: Partial<UpdateCandidateBody>,
+    isAdmin: boolean = false,
+    meta: AuditMeta,
+    session?: ClientSession
+  ) {
+    const candidate = await this.service.findByEmail(email);
+    if (!candidate) {
+      throw new CandidateNotFoundError();
+    }
+    return await this.updateCandidate(
+      candidate._id.toString(),
+      data,
+      isAdmin,
+      meta,
+      session
+    );
   }
 
   async updateCandidateInterviewStatus(

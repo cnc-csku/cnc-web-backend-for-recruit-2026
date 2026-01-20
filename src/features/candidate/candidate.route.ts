@@ -38,6 +38,38 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     },
   )
   .get(
+    "/profile",
+    async ({ candidateController, auth }) => {
+      const email = auth.actor.email;
+      const candidate = await candidateController.getCandidateByEmail(email);
+
+      if (!candidate) {
+        throw new CandidateNotFoundError();
+      }
+
+      return candidate;
+    },
+    {
+      detail: candidateOpenApi.checkCandidate,
+    },
+  )
+  .get(
+    "/profile",
+    async ({ candidateController, auth }) => {
+      const email = auth.actor.email;
+      const candidate = await candidateController.getCandidateByEmail(email);
+
+      if (!candidate) {
+        throw new CandidateNotFoundError();
+      }
+
+      return candidate;
+    },
+    {
+      detail: candidateOpenApi.getCandidate,
+    }
+  )
+  .get(
     "/:candidateId",
     async ({ params, candidateController }) => {
       return await candidateController.getCandidate(params.candidateId);
@@ -47,24 +79,25 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     },
   )
   .put(
-    "/:id",
-    async ({ params, body, candidateController, meta }) => {
+    "/profile",
+    async ({ body, candidateController, meta, auth }) => {
       const session = (await client()).startSession();
       const uploadedKeys: string[] = [];
       let newProfileKey: string | null = null;
       let newTranscriptKey: string | null = null;
       let oldFiles: (string | null)[] = [];
 
-      const id = params.id;
+      const email = auth.actor.email;
       try {
         await session.withTransaction(async () => {
-          const candidate = await candidateController.getCandidate(id, session);
+          const candidate = await candidateController.getCandidateByEmail(email);
           if (!candidate) throw new CandidateNotFoundError();
+          const id = candidate._id.toString();
 
-          if (body.profileImageFile) {
+          if (body.profileImage) {
             const profile = await candidateFileHandler.profileUpload(
-              body.profileImageFile,
-              id,
+              body.profileImage,
+              id
             );
 
             newProfileKey = profile.key;
@@ -72,18 +105,18 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
             uploadedKeys.push(profile.key);
           }
 
-          if (body.transcriptFile) {
+          if (body.transcript) {
             const transcript = await candidateFileHandler.transcriptUpload(
-              body.transcriptFile,
-              id,
+              body.transcript,
+              id
             );
             newTranscriptKey = transcript.key;
             oldFiles.push(candidate.transcriptKey);
             uploadedKeys.push(transcript.key);
           }
 
-          const result = await candidateController.updateCandidate(
-            id,
+          const result = await candidateController.updateCandidateByEmail(
+            email,
             {
               ...body,
               ...(newProfileKey && { profileImageKey: newProfileKey }),
@@ -134,14 +167,14 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
           insertedId = result.insertedId.toString();
 
           const transcript = await candidateFileHandler.transcriptUpload(
-            body.transcriptFile,
-            insertedId,
+            body.transcript,
+            insertedId
           );
           uploadedKeys.push(transcript.key);
 
           const profile = await candidateFileHandler.profileUpload(
-            body.profileImageFile,
-            insertedId,
+            body.profileImage,
+            insertedId
           );
           uploadedKeys.push(profile.key);
 

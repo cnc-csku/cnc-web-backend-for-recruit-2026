@@ -34,8 +34,17 @@ export class CandidateFileHandler {
     candidateId: string,
     type: "profile" | "transcript"
   ): Promise<UploadResult> {
-    if (!file.type.startsWith(ALLOWED_PREFIX)) {
-      throw new Error("Invalid resume file type");
+    // Profile only allows images, transcript allows images and PDFs
+    const allowedPrefix = type === "transcript"
+      ? ["image/", "application/pdf"]
+      : "image/";
+
+    const isValidType = Array.isArray(allowedPrefix)
+      ? allowedPrefix.some(prefix => file.type.startsWith(prefix))
+      : file.type.startsWith(allowedPrefix);
+
+    if (!isValidType) {
+      throw new Error(`Invalid ${type} file type`);
     }
 
     if (file.size > MAX_FILE_SIZE) {
