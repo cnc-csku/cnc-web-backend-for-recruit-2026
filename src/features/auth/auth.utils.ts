@@ -2,6 +2,7 @@ import { decode, JWT } from "next-auth/jwt";
 import { Role, User } from "./auth.model";
 import { WithId } from "mongodb";
 import { Unauthorized } from "../../core/errors";
+import { config } from "../../core/config";
 
 export type AuthUser = {
   userId: string | null;
@@ -43,7 +44,7 @@ export class AuthUtils {
     try {
       const payload = await decode({
         token,
-        secret: process.env.NEXTAUTH_SECRET!,
+        secret: config.authSecret!,
       });
       if (!payload?.sub || !payload.email) {
         throw new Unauthorized();

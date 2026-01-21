@@ -1,3 +1,4 @@
+import { config } from "../config";
 import { StorageService } from "./storage.service";
 
 export class StorageController {
@@ -21,7 +22,7 @@ export class StorageController {
   }
 
   async getFileUrl(params: { bucket: string; key: string }) {
-    return `${process.env.S3_ENDPOINT}/${params.bucket}/${params.key}`;
+    return `${config.s3.endpoint}/${params.bucket}/${params.key}`;
   }
 
   async deleteFile(params: { bucket: string; key: string }) {

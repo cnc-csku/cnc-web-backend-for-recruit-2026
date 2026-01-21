@@ -1,12 +1,13 @@
 import { Client } from "minio";
+import { config } from "../config";
 
-const endpointUrl = new URL(process.env.S3_ENDPOINT!);
+const endpointUrl = new URL(config.s3.endpoint!);
 
 export const minio = new Client({
   endPoint: endpointUrl.hostname,
   port: Number(endpointUrl.port),
   region: "us-east-1",
-  accessKey: process.env.S3_ACCESS_KEY!,
-  secretKey: process.env.S3_SECRET_KEY!,
+  accessKey: config.s3.accessKey!!,
+  secretKey: config.s3.secretKey!!,
   useSSL: false,
 });

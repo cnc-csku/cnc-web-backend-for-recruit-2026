@@ -18,11 +18,6 @@ export type AuthResult = {
 };
 
 export class AuthService {
-  private googleClient: OAuth2Client;
-
-  constructor(private opts: { googleClientId: string }) {
-    this.googleClient = new OAuth2Client(opts.googleClientId);
-  }
 
   async createUser(email: string, role: Role) {
     return await usersCol.insertOne({

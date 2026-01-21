@@ -15,9 +15,7 @@ import { InterviewQuestionService } from "../features/interviewQuestion/intervie
 import { InterviewSlotController } from "../features/InterviewSlot/interviewSlot.controller";
 import { InterviewSlotService } from "../features/InterviewSlot/interviewSlot.service";
 
-const authService = new AuthService({
-  googleClientId: process.env.GOOGLE_CLIENT_ID!,
-});
+const authService = new AuthService();
 const authController = new AuthController(authService);
 
 const auditLogService = new AuditLogService();
