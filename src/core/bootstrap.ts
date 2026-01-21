@@ -1,3 +1,4 @@
+import { AuditMeta } from "../features/auditLog/audit.model";
 import { formCol } from "../features/form/form.model";
 import { authController } from "../lib/controllers";
 import { logger } from "./logger";
@@ -29,8 +30,14 @@ async function ensurePublicBucket(bucket: string) {
 async function ensureAdminUser() {
   for (const email of ADMIN_DEFUALT_EMAIL) {
     let user = await authController.findUserByEmail(email);
+    const meta: AuditMeta = {
+      actor: {
+        email: "Boostrap system",
+      },
+      ip: "::1",
+    };
     if (!user) {
-      const result = await authController.createUser(email, "Admin");
+      const result = await authController.createUser(email, "Admin", meta);
       user = {
         _id: result.insertedId,
         role: "Admin",
@@ -40,7 +47,7 @@ async function ensureAdminUser() {
       };
     }
     if (user.role !== "Admin") {
-      await authController.updateUserRole(email, "Admin");
+      await authController.updateUserRole(email, "Admin", meta);
       logger.info(`[boostrap] ⬆️ User promoted to admin: ${email}`);
     }
   }
