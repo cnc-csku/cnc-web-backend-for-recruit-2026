@@ -58,70 +58,68 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .put(
     "/profile",
     async ({ body, candidateController, meta, auth }) => {
-      const session = (await client()).startSession();
-      const uploadedKeys: string[] = [];
-      let newProfileKey: string | null = null;
-      let newTranscriptKey: string | null = null;
-      let oldFiles: (string | null)[] = [];
+      let uploadedTranscript: string | null = null;
+      let uploadedProfile: string | null = null;
+      let oldTranscript: string | null = null;
+      let oldProfile: string | null = null;
+
+      let id: string = "";
 
       const email = auth.user.email;
       try {
-        await session.withTransaction(async () => {
-          const candidate = await candidateController.getCandidateByEmail(
-            email,
-            false,
-          );
-          if (!candidate) throw new CandidateNotFoundError();
-          const id = candidate._id.toString();
-
-          if (body.profileImage) {
-            const profile = await candidateFileHandler.profileUpload(
-              body.profileImage,
-              id,
-            );
-
-            newProfileKey = profile.key;
-            oldFiles.push(candidate.profileImageKey);
-            uploadedKeys.push(profile.key);
-          }
-
-          if (body.transcript) {
-            const transcript = await candidateFileHandler.transcriptUpload(
-              body.transcript,
-              id,
-            );
-            newTranscriptKey = transcript.key;
-            oldFiles.push(candidate.transcriptKey);
-            uploadedKeys.push(transcript.key);
-          }
-
-          const result = await candidateController.updateCandidateByEmail(
-            email,
-            {
-              ...body,
-              ...(newProfileKey && { profileImageKey: newProfileKey }),
-              ...(newTranscriptKey && { transcriptKey: newTranscriptKey }),
-            },
-            false,
-            meta,
-            session,
-          );
-          if (!result) return;
-        });
-        await Promise.all(
-          oldFiles
-            .filter((v) => v !== null)
-            .map((k) => candidateFileHandler.unlink(k)),
+        const candidate = await candidateController.getCandidateByEmail(
+          email,
+          false,
         );
+        if (!candidate) throw new CandidateNotFoundError();
+        id = candidate._id.toString();
+
+        oldProfile = candidate.profileImageKey || null;
+        oldTranscript = candidate.transcriptKey || null;
+
+        if (body.profileImage) {
+          const profile = await candidateFileHandler.profileUpload(
+            body.profileImage,
+            id,
+          );
+
+          uploadedProfile = profile.key;
+        }
+
+        if (body.transcript) {
+          const transcript = await candidateFileHandler.transcriptUpload(
+            body.transcript,
+            id,
+          );
+          uploadedTranscript = transcript.key;
+        }
+
+        const result = await candidateController.updateCandidateByEmail(
+          email,
+          {
+            ...body,
+            ...(uploadedProfile && { profileImageKey: uploadedProfile }),
+            ...(uploadedTranscript && { transcriptKey: uploadedTranscript }),
+          },
+          false,
+          meta,
+        );
+        if (!result) return;
+
+        if (oldProfile && uploadedProfile)
+          await candidateFileHandler.unlinkProfile(oldProfile);
+
+        if (oldTranscript && uploadedTranscript)
+          await candidateFileHandler.unlinkTranscript(oldTranscript);
 
         return { ok: true };
       } catch (err) {
-        await Promise.all(
-          uploadedKeys.map((key) => candidateFileHandler.unlink(key)),
-        );
+        if (uploadedProfile)
+          await candidateFileHandler.unlinkProfile(uploadedProfile);
+
+        if (uploadedTranscript)
+          await candidateFileHandler.unlinkTranscript(uploadedTranscript);
         throw err;
-      } finally {
-        await session.endSession();
       }
     },
     {
@@ -132,53 +130,53 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .post(
     "/submit",
     async ({ body, candidateController, candidateFileHandler, meta, auth }) => {
-      const session = (await client()).startSession();
-      const uploadedKeys: string[] = [];
+      let uploadedTranscript: string | null = null;
+      let uploadedProfile: string | null = null;
       let insertedId: string = "";
       const email = auth.user.email;
       try {
-        await session.withTransaction(async () => {
-          const result = await candidateController.createCandidate(
-            email,
-            body,
-            meta,
-            session,
-          );
+        const result = await candidateController.createCandidate(
+          email,
+          body,
+          meta,
+        );
+        if (!result) throw new Error("Failed to create candidate");
+        insertedId = result.insertedId.toString();
 
-          if (!result) return;
-          insertedId = result.insertedId.toString();
+        const transcript = await candidateFileHandler.transcriptUpload(
+          body.transcript,
+          insertedId,
+        );
+        uploadedTranscript = transcript.key;
 
-          const transcript = await candidateFileHandler.transcriptUpload(
-            body.transcript,
-            insertedId,
-          );
-          uploadedKeys.push(transcript.key);
+        const profile = await candidateFileHandler.profileUpload(
+          body.profileImage,
+          insertedId,
+        );
+        uploadedProfile = profile.key;
+        await candidateController.updateCandidate(
+          insertedId,
+          {
+            profileImageKey: profile.key,
+            transcriptKey: transcript.key,
+          },
+          true,
+          meta,
+        );
 
-          const profile = await candidateFileHandler.profileUpload(
-            body.profileImage,
-            insertedId,
-          );
-          uploadedKeys.push(profile.key);
-
-          await candidateController.updateCandidate(
-            insertedId,
-            {
-              profileImageKey: profile.key,
-              transcriptKey: transcript.key,
-            },
-            true,
-            meta,
-            session,
-          );
-        });
         return { insertedId };
       } catch (err) {
-        await Promise.all(
-          uploadedKeys.map((key) => candidateFileHandler.unlink(key)),
-        );
+        if (uploadedProfile)
+          await candidateFileHandler.unlinkProfile(uploadedProfile);
+
+        if (uploadedTranscript)
+          await candidateFileHandler.unlinkTranscript(uploadedTranscript);
+
+        if (insertedId) {
+          await candidateController.deleteCandidate(insertedId, meta);
+        }
+
         throw err;
-      } finally {
-        await session.endSession();
       }
     },
     {

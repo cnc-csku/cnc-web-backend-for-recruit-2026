@@ -38,8 +38,12 @@ export class CandidateFileHandler {
     return await this._upload(file, candidateId, "transcript");
   }
 
-  async unlink(key: string, type: "profile" | "transcript") {
-    return await this._delete(key, type);
+  async unlinkProfile(key: string) {
+    return await this._delete(key, PROFILE_BUCKET);
+  }
+
+  async unlinkTranscript(key: string) {
+    return await this._delete(key, TRANSCRIPT_BUCKET);
   }
 
   private async _upload(
@@ -76,11 +80,9 @@ export class CandidateFileHandler {
     return { bucket: targetBucket, contentType: file.type, key: resultKey };
   }
 
-  private async _delete(key: string, type: "profile" | "transcript") {
-    const targetBucket =
-      type === "profile" ? PROFILE_BUCKET : TRANSCRIPT_BUCKET;
+  private async _delete(key: string, bucket: string) {
     await this.storageController.deleteFile({
-      bucket: targetBucket,
+      bucket: bucket,
       key: key,
     });
   }

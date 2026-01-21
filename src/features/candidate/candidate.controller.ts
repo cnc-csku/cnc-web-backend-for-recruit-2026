@@ -30,6 +30,9 @@ export class CandidateController {
     return await this.service.getAlls();
   }
 
+  async submitCandidate(){
+    
+  }
   async updateCandidate(
     candidateId: string,
     data: Partial<UpdateCandidateBody>,
