@@ -15,11 +15,11 @@ import { InterviewQuestionService } from "../features/interviewQuestion/intervie
 import { InterviewSlotController } from "../features/InterviewSlot/interviewSlot.controller";
 import { InterviewSlotService } from "../features/InterviewSlot/interviewSlot.service";
 
-const authService = new AuthService();
-const authController = new AuthController(authService);
-
 const auditLogService = new AuditLogService();
 const auditLogController = new AuditLogController(auditLogService);
+
+const authService = new AuthService(auditLogController);
+const authController = new AuthController(authService);
 
 const formService = new FormService(auditLogController);
 const formController = new FormController(formService);

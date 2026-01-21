@@ -184,3 +184,11 @@ export class InvalidFileTypeError extends DomainError {
     super(message);
   }
 }
+
+export class RestrictedError extends DomainError {
+  statusCode = 403;
+  code = "RESTRICTED";
+  constructor(message = "You are restricted for using this system (baned)") {
+    super(message);
+  }
+}

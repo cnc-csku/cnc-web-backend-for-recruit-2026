@@ -2,7 +2,7 @@ import Elysia from "elysia";
 import { AuthContextValue, AuthUtils } from "./auth.utils";
 import { decode, JWT } from "next-auth/jwt";
 import { authController } from "../../lib/controllers";
-import { Forbidden, Unauthorized } from "../../core/errors";
+import { Forbidden, RestrictedError, Unauthorized } from "../../core/errors";
 import { Role } from "./auth.model";
 
 export const requireRole = (role: Role) =>
@@ -26,6 +26,8 @@ export const authGuard = new Elysia({ name: "guard" })
       const payload = await AuthUtils.verifyToken(token);
 
       let user = await authController.ensureUserByEmail(payload.email!);
+      if (await authController.isBan(payload.email!))
+        throw new RestrictedError();
       return { auth: AuthUtils.toAuth(payload, user!) };
     },
   );
