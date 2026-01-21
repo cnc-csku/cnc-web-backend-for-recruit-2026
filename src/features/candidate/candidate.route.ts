@@ -7,15 +7,11 @@ import {
   interviewSlotController,
   storageController,
 } from "../../lib/controllers";
-import { ip } from "elysia-ip";
 import { auditPlugin } from "../auditLog/audit.plugin";
 import { candidateOpenApi } from "./candidate.openapi";
 import { client } from "../../core/db";
 import { CandidateNotFoundError } from "../../core/errors";
 import { authGuard } from "../auth/auth.guard";
-
-//TODO: get profile from auth
-//TODO: Middleware rate limit
 
 export const candidateRoute = new Elysia({ prefix: "/candidates" })
   .use(auditPlugin)
@@ -29,7 +25,10 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     "/check",
     async ({ candidateController, auth }) => {
       const email = auth.user.email;
-      const result = await candidateController.getCandidateByEmail(email);
+      const result = await candidateController.getCandidateByEmail(
+        email,
+        false,
+      );
 
       return { submitted: result !== null, candidateId: result?._id };
     },
@@ -41,7 +40,10 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     "/profile",
     async ({ candidateController, auth }) => {
       const email = auth.user.email;
-      const candidate = await candidateController.getCandidateByEmail(email);
+      const candidate = await candidateController.getCandidateByEmail(
+        email,
+        true,
+      );
 
       if (!candidate) {
         throw new CandidateNotFoundError();
@@ -65,8 +67,10 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       const email = auth.user.email;
       try {
         await session.withTransaction(async () => {
-          const candidate =
-            await candidateController.getCandidateByEmail(email);
+          const candidate = await candidateController.getCandidateByEmail(
+            email,
+            false,
+          );
           if (!candidate) throw new CandidateNotFoundError();
           const id = candidate._id.toString();
 
@@ -202,7 +206,11 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       meta,
     }) => {
       const email = auth.user.email;
-      const candidate = await candidateController.getCandidateByEmail(email);
+      const candidate = await candidateController.getCandidateByEmail(
+        email,
+        false,
+      );
+      if (!candidate) throw new CandidateNotFoundError();
       return await candidateWithdrawalService.withdraw(
         candidate?._id.toString(),
         meta,
@@ -217,7 +225,11 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     "/interview-slot",
     async ({ params, body, interviewSlotController, meta, auth }) => {
       const email = auth.user.email;
-      const candidate = await candidateController.getCandidateByEmail(email);
+      const candidate = await candidateController.getCandidateByEmail(
+        email,
+        false,
+      );
+      if (!candidate) throw new CandidateNotFoundError();
       return await interviewSlotController.assignCandidateToSlot(
         candidate._id.toString(),
         body.slotId,
@@ -234,7 +246,11 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     "/interview-slot",
     async ({ params, body, interviewSlotController, meta, auth }) => {
       const email = auth.user.email;
-      const candidate = await candidateController.getCandidateByEmail(email);
+      const candidate = await candidateController.getCandidateByEmail(
+        email,
+        false,
+      );
+      if (!candidate) throw new CandidateNotFoundError();
       return await interviewSlotController.changeCandidateAssignedSlot(
         candidate._id.toString(),
         body.slotId,
@@ -251,7 +267,11 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     "/interview-slot",
     async ({ params, body, interviewSlotController, meta, auth }) => {
       const email = auth.user.email;
-      const candidate = await candidateController.getCandidateByEmail(email);
+      const candidate = await candidateController.getCandidateByEmail(
+        email,
+        false,
+      );
+      if (!candidate) throw new CandidateNotFoundError();
       return await interviewSlotController.unAssignCandidateFromSlot(
         candidate._id.toString(),
         body.slotId,

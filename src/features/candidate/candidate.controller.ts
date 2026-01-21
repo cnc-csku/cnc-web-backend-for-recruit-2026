@@ -18,8 +18,8 @@ import { ClientSession } from "mongodb";
 export class CandidateController {
   constructor(private service: CandidateService) {}
 
-  async getCandidateByEmail(email: string) {
-    return await this.service.findByEmail(email);
+  async getCandidateByEmail(email: string, withS3: boolean) {
+    return await this.service.findByEmail(email, withS3);
   }
 
   async getCandidate(id: string, session?: ClientSession) {
@@ -60,7 +60,7 @@ export class CandidateController {
     meta: AuditMeta,
     session?: ClientSession,
   ) {
-    const candidate = await this.service.findByEmail(email);
+    const candidate = await this.service.findByEmail(email, false);
     if (!candidate) {
       throw new CandidateNotFoundError();
     }

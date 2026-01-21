@@ -34,7 +34,7 @@ async function ensureAdminUser() {
     }
     if (user.role !== "Admin") {
       await authController.updateUserRole(email, "Admin");
-      logger.info(`⬆️ User promoted to admin: ${email}`);
+      logger.info(`[boostrap] ⬆️ User promoted to admin: ${email}`);
     }
   }
 }

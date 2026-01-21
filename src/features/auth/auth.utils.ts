@@ -1,6 +1,7 @@
-import { JWT } from "next-auth/jwt";
+import { decode, JWT } from "next-auth/jwt";
 import { Role, User } from "./auth.model";
 import { WithId } from "mongodb";
+import { Unauthorized } from "../../core/errors";
 
 export type AuthUser = {
   userId: string | null;
@@ -30,13 +31,30 @@ export class AuthUtils {
     };
   }
 
-  public static toAuth(
-    payload: JWT,
-    user: WithId<User>,
-  ): AuthContextValue {
+  public static toAuth(payload: JWT, user: WithId<User>): AuthContextValue {
     return {
       user: this.toUser(user),
       payload,
     };
+  }
+
+  public static async verifyToken(token: string | null) {
+    if (!token) throw new Unauthorized();
+    try {
+      const payload = await decode({
+        token,
+        secret: process.env.NEXTAUTH_SECRET!,
+      });
+      if (!payload?.sub || !payload.email) {
+        throw new Unauthorized();
+      }
+
+      if (payload?.exp && (payload?.exp as number) * 1000 < Date.now()) {
+        throw new Unauthorized();
+      }
+      return payload;
+    } catch {
+      throw new Unauthorized();
+    }
   }
 }

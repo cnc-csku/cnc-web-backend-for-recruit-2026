@@ -50,6 +50,8 @@ export class CandidateFileHandler {
     if (file.size > MAX_FILE_SIZE) {
       throw new FileTooLargeError();
     }
+    console.log(file.name);
+    console.log(file.type);
 
     const ext = file.type.split("/")[1];
     const key = `candidates/${candidateId}/${type}/${randomUUIDv7()}.${ext}`;

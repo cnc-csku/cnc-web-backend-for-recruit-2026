@@ -62,13 +62,39 @@ export class CandidateService {
     return candidates;
   }
 
-  async findByEmail(email: string): Promise<WithId<Candidate>> {
+  async findByEmail(
+    email: string,
+    withS3: boolean,
+  ): Promise<WithId<Candidate> | null> {
     const candidate = await candidatesCol.findOne({
       email: email,
       applicationStatus: "ACTIVE",
     });
-    if (!candidate) throw new CandidateNotFoundError();
-    return candidate;
+    console.log(candidate);
+
+    if (!candidate) return null;
+
+    let profileUrl: string | null = null;
+    let transcriptUrl: string | null = null;
+
+    if (withS3) {
+      profileUrl = candidate.profileImageKey
+        ? await this.candidateFileHandler.getPresignedUrl(
+            candidate.profileImageKey,
+          )
+        : null;
+      transcriptUrl = candidate.transcriptKey
+        ? await this.candidateFileHandler.getPresignedUrl(
+            candidate.transcriptKey,
+          )
+        : null;
+    }
+
+    return {
+      ...candidate,
+      ...(profileUrl && { profileImageKey: profileUrl }),
+      ...(transcriptUrl && { transcriptKey: transcriptUrl }),
+    };
   }
 
   //only include interviewquestion when lookup by id

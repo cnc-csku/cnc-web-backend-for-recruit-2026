@@ -21,23 +21,11 @@ export const authGuard = new Elysia({ name: "guard" })
     async ({
       headers,
       authController,
-      path,
     }): Promise<{ auth: AuthContextValue }> => {
       const token = AuthUtils.getBearerToken(headers?.authorization);
-      if (!token) throw new Unauthorized();
-      const payload = await decode({
-        token,
-        secret: process.env.NEXTAUTH_SECRET!,
-      });
-      if (!payload) {
-        throw new Unauthorized();
-      }
+      const payload = await AuthUtils.verifyToken(token);
 
-      if (!payload.sub || !payload.email) {
-        throw new Unauthorized();
-      }
-
-      let user = await authController.ensureUserByEmail(payload.email);
+      let user = await authController.ensureUserByEmail(payload.email!);
       return { auth: AuthUtils.toAuth(payload, user!) };
     },
   );
