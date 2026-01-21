@@ -10,4 +10,5 @@ export const minio = new Client({
   accessKey: config.s3.accessKey!!,
   secretKey: config.s3.secretKey!!,
   useSSL: false,
+  pathStyle: true,
 });

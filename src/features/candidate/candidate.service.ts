@@ -39,7 +39,9 @@ export class CandidateService {
     private auditController: AuditLogController,
   ) {}
 
-  async getAlls(): Promise<Candidate[]> {
+  async getAlls(): Promise<
+    Partial<Candidate> & { profileImageUrl: string | null }[]
+  > {
     const candidates = await candidatesCol
       .find(
         {},
@@ -55,17 +57,34 @@ export class CandidateService {
             applicationStatus: 1,
             interviewStatus: 1,
             currentInterviewRoom: 1,
+            profileImageKey: 1,
           },
         },
       )
       .toArray();
-    return candidates;
+
+    const results = candidates.map((c) => {
+      const { profileImageKey, ...rest } = c;
+      return {
+        ...rest,
+        profileImageUrl: profileImageKey
+          ? this.candidateFileHandler.getUrl(profileImageKey)
+          : null,
+      };
+    });
+    return results;
   }
 
   async findByEmail(
     email: string,
     withS3: boolean,
-  ): Promise<WithId<Candidate> | null> {
+  ): Promise<
+    | (WithId<Candidate> & {
+        profileUrl?: string;
+        transcriptUrl?: string;
+      })
+    | null
+  > {
     const candidate = await candidatesCol.findOne({
       email: email,
       applicationStatus: "ACTIVE",
@@ -88,8 +107,8 @@ export class CandidateService {
 
     return {
       ...candidate,
-      ...(transcriptUrl && { transcriptKey: transcriptUrl }),
-      profileImageKey: profileUrl,
+      ...(transcriptUrl && { transcriptUrl: transcriptUrl }),
+      ...(profileUrl && { profileUrl: profileUrl }),
     };
   }
 
@@ -154,6 +173,7 @@ export class CandidateService {
       },
       { returnDocument: "after", session },
     );
+
     if (!result) return null;
 
     const changes = AuditUtils.calculateDiff(before, result);
@@ -227,7 +247,7 @@ export class CandidateService {
     const { interviewSlotId, ...rest } = data;
     const safe = pickSafe(
       rest,
-      CandidateModel.createCandidateBody,
+      CandidateModel.candidate,
     ) as CreateCandidateBody;
 
     const candidate: Candidate = {

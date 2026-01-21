@@ -62,6 +62,8 @@ export const app = new Elysia()
     } else {
       if (error instanceof Error) {
         logger.error(error.message);
+        console.error(error);
+
       } else {
         console.error(error);
       }

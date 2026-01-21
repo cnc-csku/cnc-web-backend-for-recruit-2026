@@ -23,7 +23,7 @@ export class CandidateFileHandler {
     });
   }
 
-  async getUrl(key: string) {
+  getUrl(key: string) {
     return this.storageController.getFileUrl({
       bucket: PROFILE_BUCKET,
       key: key,
@@ -69,6 +69,7 @@ export class CandidateFileHandler {
 
     const ext = file.type.split("/")[1];
     const key = `candidates/${candidateId}/${randomUUIDv7()}.${ext}`;
+
     const targetBucket =
       type === "profile" ? PROFILE_BUCKET : TRANSCRIPT_BUCKET;
     const resultKey = await this.storageController.uploadFile({

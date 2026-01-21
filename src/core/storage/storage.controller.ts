@@ -21,7 +21,7 @@ export class StorageController {
     return await this.service.presignGetObject(params);
   }
 
-  async getFileUrl(params: { bucket: string; key: string }) {
+  getFileUrl(params: { bucket: string; key: string }) {
     return `${config.s3.endpoint}/${params.bucket}/${params.key}`;
   }
 

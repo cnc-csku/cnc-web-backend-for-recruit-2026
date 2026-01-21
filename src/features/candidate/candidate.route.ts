@@ -48,8 +48,8 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       if (!candidate) {
         throw new CandidateNotFoundError();
       }
-
-      return candidate;
+      const { transcriptKey, profileImageKey, ...data } = candidate;
+      return data;
     },
     {
       detail: candidateOpenApi.checkCandidate,
@@ -73,7 +73,6 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
         );
         if (!candidate) throw new CandidateNotFoundError();
         id = candidate._id.toString();
-
         oldProfile = candidate.profileImageKey || null;
         oldTranscript = candidate.transcriptKey || null;
 
