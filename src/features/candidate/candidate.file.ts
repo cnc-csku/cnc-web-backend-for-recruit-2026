@@ -10,14 +10,26 @@ export interface UploadResult {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_PREFIX = "image/";
-const BUCKET = "uploads";
+const PROFILE_BUCKET = "cnc-profile";
+const TRANSCRIPT_BUCKET = "cnc-transcript";
 
 export class CandidateFileHandler {
   constructor(private storageController: StorageController) {}
 
   async getPresignedUrl(key: string) {
-    return this.storageController.getFileUrl({ bucket: BUCKET, key: key });
+    return this.storageController.getPresignedFileUrl({
+      bucket: TRANSCRIPT_BUCKET,
+      key: key,
+    });
   }
+
+  async getUrl(key: string) {
+    return this.storageController.getFileUrl({
+      bucket: PROFILE_BUCKET,
+      key: key,
+    });
+  }
+
   async profileUpload(file: File, candidateId: string) {
     return await this._upload(file, candidateId, "profile");
   }
@@ -26,8 +38,8 @@ export class CandidateFileHandler {
     return await this._upload(file, candidateId, "transcript");
   }
 
-  async unlink(key: string) {
-    return await this._delete(key);
+  async unlink(key: string, type: "profile" | "transcript") {
+    return await this._delete(key, type);
   }
 
   private async _upload(
@@ -50,23 +62,25 @@ export class CandidateFileHandler {
     if (file.size > MAX_FILE_SIZE) {
       throw new FileTooLargeError();
     }
-    console.log(file.name);
-    console.log(file.type);
 
     const ext = file.type.split("/")[1];
-    const key = `candidates/${candidateId}/${type}/${randomUUIDv7()}.${ext}`;
+    const key = `candidates/${candidateId}/${randomUUIDv7()}.${ext}`;
+    const targetBucket =
+      type === "profile" ? PROFILE_BUCKET : TRANSCRIPT_BUCKET;
     const resultKey = await this.storageController.uploadFile({
-      bucket: BUCKET,
+      bucket: targetBucket,
       key: key,
       file,
     });
 
-    return { bucket: BUCKET, contentType: file.type, key: resultKey };
+    return { bucket: targetBucket, contentType: file.type, key: resultKey };
   }
 
-  private async _delete(key: string) {
+  private async _delete(key: string, type: "profile" | "transcript") {
+    const targetBucket =
+      type === "profile" ? PROFILE_BUCKET : TRANSCRIPT_BUCKET;
     await this.storageController.deleteFile({
-      bucket: BUCKET,
+      bucket: targetBucket,
       key: key,
     });
   }

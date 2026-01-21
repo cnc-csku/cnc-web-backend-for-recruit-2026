@@ -1,10 +1,4 @@
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-} from "@aws-sdk/client-s3";
-import { s3 } from "./storage.client";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { minio } from "./storage.client";
 
 export class StorageService {
   constructor() {}
@@ -15,15 +9,16 @@ export class StorageService {
     body: Buffer;
     contentType: string;
   }) {
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: params.bucket,
-        Key: params.key,
-        Body: params.body,
-        ContentType: params.contentType,
-      }),
+    await minio.putObject(
+      params.bucket,
+      params.key,
+      params.body,
+      params.body.length,
+      {
+        "Content-Type": params.contentType,
+        "Content-Disposition": "inline",
+      },
     );
-    
     return params.key;
   }
 
@@ -32,22 +27,14 @@ export class StorageService {
     key: string;
     expiresIn?: number;
   }) {
-    return getSignedUrl(
-      s3,
-      new GetObjectCommand({
-        Bucket: params.bucket,
-        Key: params.key,
-      }),
-      { expiresIn: params.expiresIn ?? 300 },
+    return minio.presignedGetObject(
+      params.bucket,
+      params.key,
+      params.expiresIn ?? 300,
     );
   }
 
   async deleteObject(params: { bucket: string; key: string }) {
-    await s3.send(
-      new DeleteObjectCommand({
-        Bucket: params.bucket,
-        Key: params.key,
-      }),
-    );
+    await minio.removeObject(params.bucket, params.key);
   }
 }

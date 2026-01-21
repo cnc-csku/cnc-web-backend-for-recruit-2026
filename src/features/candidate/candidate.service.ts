@@ -70,30 +70,26 @@ export class CandidateService {
       email: email,
       applicationStatus: "ACTIVE",
     });
-    console.log(candidate);
 
     if (!candidate) return null;
 
-    let profileUrl: string | null = null;
     let transcriptUrl: string | null = null;
 
     if (withS3) {
-      profileUrl = candidate.profileImageKey
-        ? await this.candidateFileHandler.getPresignedUrl(
-            candidate.profileImageKey,
-          )
-        : null;
       transcriptUrl = candidate.transcriptKey
         ? await this.candidateFileHandler.getPresignedUrl(
             candidate.transcriptKey,
           )
         : null;
     }
+    const profileUrl =
+      candidate.profileImageKey &&
+      (await this.candidateFileHandler.getUrl(candidate.profileImageKey));
 
     return {
       ...candidate,
-      ...(profileUrl && { profileImageKey: profileUrl }),
       ...(transcriptUrl && { transcriptKey: transcriptUrl }),
+      profileImageKey: profileUrl,
     };
   }
 
@@ -110,11 +106,9 @@ export class CandidateService {
 
     const interviewQ =
       await this.interviewQuestionController.getByCandidateId(id);
-    const profileUrl = candidate.profileImageKey
-      ? await this.candidateFileHandler.getPresignedUrl(
-          candidate.profileImageKey,
-        )
-      : null;
+    const profileUrl =
+      candidate.profileImageKey &&
+      (await this.candidateFileHandler.getUrl(candidate.profileImageKey));
     const transcriptUrl = candidate.transcriptKey
       ? await this.candidateFileHandler.getPresignedUrl(candidate.transcriptKey)
       : null;
@@ -228,7 +222,7 @@ export class CandidateService {
   ) {
     await this.formController.assertSubmissionAllowed();
 
-    const exist = await this.findByEmail(email);
+    const exist = await this.findByEmail(email, false);
     if (exist) throw new DuplicateCandidateError();
     const { interviewSlotId, ...rest } = data;
     const safe = pickSafe(

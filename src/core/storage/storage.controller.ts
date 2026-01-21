@@ -12,12 +12,16 @@ export class StorageController {
     });
   }
 
-  async getFileUrl(params: {
+  async getPresignedFileUrl(params: {
     bucket: string;
     key: string;
     expiresIn?: number;
   }) {
     return await this.service.presignGetObject(params);
+  }
+
+  async getFileUrl(params: { bucket: string; key: string }) {
+    return `${process.env.S3_ENDPOINT}/${params.bucket}/${params.key}`;
   }
 
   async deleteFile(params: { bucket: string; key: string }) {

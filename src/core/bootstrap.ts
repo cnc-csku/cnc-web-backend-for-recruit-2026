@@ -1,22 +1,29 @@
-import { CreateBucketCommand, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { formCol } from "../features/form/form.model";
-import { db } from "./db";
-import { s3 } from "./storage/storage.client";
-import { usersCol } from "../features/auth/auth.model";
 import { authController } from "../lib/controllers";
 import { logger } from "./logger";
+import { minio } from "./storage/storage.client";
 
 const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th", "wachirawich.s@ku.th"];
 async function ensureBucket(bucket: string) {
-  try {
-    await s3.send(new HeadBucketCommand({ Bucket: bucket }));
-  } catch (err: any) {
-    if (err.$metadata?.httpStatusCode === 404) {
-      await s3.send(new CreateBucketCommand({ Bucket: bucket }));
-    } else {
-      throw err;
-    }
-  }
+  const exists = await minio.bucketExists(bucket);
+  if (!exists) await minio.makeBucket(bucket);
+}
+
+async function ensurePublicBucket(bucket: string) {
+  await ensureBucket(bucket);
+
+  const publicReadPolicy = {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Principal: { AWS: ["*"] },
+        Action: ["s3:GetObject"],
+        Resource: [`arn:aws:s3:::${bucket}/*`],
+      },
+    ],
+  };
+  await minio.setBucketPolicy(bucket, JSON.stringify(publicReadPolicy));
 }
 
 async function ensureAdminUser() {
@@ -56,5 +63,6 @@ export async function bootstrap() {
   );
 
   await ensureAdminUser();
-  await ensureBucket("uploads");
+  await ensureBucket("cnc-transcript");
+  await ensurePublicBucket("cnc-profile");
 }
