@@ -21,6 +21,13 @@ export const formOpenApi: Record<string, OpenApiDetail> = {
     tags: ["Form"],
   },
 
+  setCountdown: {
+    operationId: "adminSetCountdown",
+    summary: "Set countdown (admin)",
+    description: "Set the countdown context to show on submission page",
+    tags: ["Form"],
+  },
+
   setEditableUntil: {
     operationId: "adminSetEditableUntil",
     summary: "Set editable until (admin)",

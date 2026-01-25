@@ -1,7 +1,5 @@
-import openapi from "@elysiajs/openapi";
 import { app } from "./app";
 import { config } from "./core/config";
-import { openapiConfig } from "./core/openapi";
 import { logger } from "./core/logger";
 
 app.listen(config.port);

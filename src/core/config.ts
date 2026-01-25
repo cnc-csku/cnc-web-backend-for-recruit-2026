@@ -4,6 +4,22 @@ type NodeEnv = "development" | "production";
 
 const NODE_ENV = (process.env.NODE_ENV || "development") as NodeEnv;
 
+const REQUIRED_KEY = {
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  MONGO_URI: process.env.MONGO_URI,
+  MONGO_DB_NAME: process.env.MONGO_DB_NAME,
+  S3_ENDPOINT: process.env.S3_ENDPOINT,
+  S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
+  S3_SECRET_KEY: process.env.S3_SECRET_KEY,
+};
+
+for (const [key, value] of Object.entries(REQUIRED_KEY)) {
+  if (!value) {
+    logger.error(`${key} is missing from .env`);
+    throw new Error("Missing config");
+  }
+}
+
 export const config = {
   port: Number(process.env.ELYSIA_PORT || 4000),
   authSecret: process.env.NEXTAUTH_SECRET,
@@ -23,7 +39,3 @@ export const config = {
   isProd: NODE_ENV === "production",
   hostname: NODE_ENV === "production" ? "0.0.0.0" : null,
 };
-
-if (!config.mongo.uri) {
-  logger.error("MONGO_URI is required");
-}

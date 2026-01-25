@@ -21,6 +21,20 @@ export class FormController {
     return await this.service.setEditableUntil(until, meta);
   }
 
+  async setCountdownContext(
+    countdownTitle: string,
+    countdownTime: string,
+    timeupMessage: string,
+    meta: AuditMeta,
+  ) {
+    return await this.service.setCountdownContext(
+      countdownTitle,
+      countdownTime,
+      timeupMessage,
+      meta,
+    );
+  }
+
   async assertSubmissionAllowed() {
     await this.service.assertSubmissionAllowed();
   }

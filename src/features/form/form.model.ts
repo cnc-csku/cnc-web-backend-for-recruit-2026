@@ -8,10 +8,18 @@ export const FormModel = {
     opensAt: t.String({ format: "date-time" }),
     closesAt: t.String({ format: "date-time" }),
     editableUntil: t.String({ format: "date-time" }),
+    countdownTitle: t.Nullable(t.String()),
+    countdownTime: t.Nullable(t.String({ format: "date-time" })),
+    timeupMessage: t.Nullable(t.String()),
   }),
   scheduleBody: t.Object({
     opensAt: t.String({ format: "date-time" }),
     closesAt: t.String({ format: "date-time" }),
+  }),
+  countdownBody: t.Object({
+    countdownTitle: t.String(),
+    countdownTime: t.String({ format: "date-time" }),
+    timeupMessage: t.String(),
   }),
   allowSubmitBody: t.Object({
     allowSubmit: t.Boolean(),

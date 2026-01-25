@@ -21,6 +21,9 @@ export class FormService {
       opensAt: result.opensAt,
       closesAt: result.closesAt,
       editableUntil: result.editableUntil,
+      countdownTitle: result.countdownTitle,
+      countdownTime: result.countdownTime,
+      timeupMessage: result.timeupMessage,
     };
   }
 
@@ -97,6 +100,44 @@ export class FormService {
       {
         $set: {
           editableUntil: until,
+        },
+      },
+      { returnDocument: "after" },
+    );
+    if (!result) throw new ScheduleNotFoundError();
+
+    const changes = AuditUtils.calculateDiff(before, result);
+    this.auditController.audit({
+      ...meta,
+      action: "UPDATE_FORM_SCHEDULE",
+      changes: {
+        before: changes.before,
+        after: changes.after,
+      },
+      target: {
+        type: "FORM",
+        id: result._id.toString(),
+      },
+    });
+    return result;
+  }
+
+  async setCountdownContext(
+    countdownTitle: string,
+    countdownTime: string,
+    timeupMessage: string,
+    meta: AuditMeta,
+  ) {
+    const before = await formCol.findOne({ _id: "FORM_CONFIG" });
+    if (!before) throw new ScheduleNotFoundError();
+
+    const result = await formCol.findOneAndUpdate(
+      { _id: "FORM_CONFIG" },
+      {
+        $set: {
+          countdownTitle: countdownTitle,
+          countdownTime: countdownTime,
+          timeupMessage: timeupMessage,
         },
       },
       { returnDocument: "after" },

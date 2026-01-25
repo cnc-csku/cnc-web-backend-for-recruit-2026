@@ -37,4 +37,19 @@ export const formAdminRoute = new Elysia({ prefix: "/form" })
       body: FormModel.editableBody,
       detail: formOpenApi.setEditableUntil,
     },
+  )
+  .patch(
+    "/set-countdown",
+    async ({ formController, body, meta }) => {
+      return await formController.setCountdownContext(
+        body.countdownTitle,
+        body.countdownTime,
+        body.timeupMessage,
+        meta,
+      );
+    },
+    {
+      body: FormModel.countdownBody,
+      detail: formOpenApi.setEditableUntil,
+    },
   );
