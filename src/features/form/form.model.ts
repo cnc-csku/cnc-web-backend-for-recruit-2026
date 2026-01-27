@@ -11,6 +11,7 @@ export const FormModel = {
     countdownTitle: t.Nullable(t.String()),
     countdownTime: t.Nullable(t.String({ format: "date-time" })),
     timeupMessage: t.Nullable(t.String()),
+    recruitState: t.Number({ default: 0 }),
   }),
   scheduleBody: t.Object({
     opensAt: t.String({ format: "date-time" }),
@@ -20,6 +21,7 @@ export const FormModel = {
     countdownTitle: t.String(),
     countdownTime: t.String({ format: "date-time" }),
     timeupMessage: t.String(),
+    recruitState: t.Number({ minimum: 0, maximum: 3, default: 0 }),
   }),
   allowSubmitBody: t.Object({
     allowSubmit: t.Boolean(),

@@ -45,6 +45,7 @@ export const formAdminRoute = new Elysia({ prefix: "/form" })
         body.countdownTitle,
         body.countdownTime,
         body.timeupMessage,
+        body.recruitState,
         meta,
       );
     },
