@@ -24,6 +24,7 @@ export class FormService {
       countdownTitle: result.countdownTitle,
       countdownTime: result.countdownTime,
       timeupMessage: result.timeupMessage,
+      recruitState: result.recruitState ?? 0,
     };
   }
 
@@ -126,6 +127,7 @@ export class FormService {
     countdownTitle: string,
     countdownTime: string,
     timeupMessage: string,
+    recruitState: number,
     meta: AuditMeta,
   ) {
     const before = await formCol.findOne({ _id: "FORM_CONFIG" });
@@ -138,6 +140,7 @@ export class FormService {
           countdownTitle: countdownTitle,
           countdownTime: countdownTime,
           timeupMessage: timeupMessage,
+          recruitState: recruitState,
         },
       },
       { returnDocument: "after" },

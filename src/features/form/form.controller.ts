@@ -25,12 +25,14 @@ export class FormController {
     countdownTitle: string,
     countdownTime: string,
     timeupMessage: string,
+    recruitState: number,
     meta: AuditMeta,
   ) {
     return await this.service.setCountdownContext(
       countdownTitle,
       countdownTime,
       timeupMessage,
+      recruitState,
       meta,
     );
   }
