@@ -30,6 +30,8 @@ export const ApplicationStatus = t.Union([
 
 export const InterviewStatus = t.Union([
   t.Literal("PENDING"),
+  t.Literal("SHORTLISTED"),
+  t.Literal("INTERVIEWING"),
   t.Literal("PASSED"),
   t.Literal("FAILED"),
 ]);

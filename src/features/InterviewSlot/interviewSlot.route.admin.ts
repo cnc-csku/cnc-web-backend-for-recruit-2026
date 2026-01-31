@@ -3,17 +3,12 @@ import { interviewSlotController } from "../../lib/controllers";
 import { auditPlugin } from "../auditLog/audit.plugin";
 import { InterviewSlotModel } from "./interviewSlot.model";
 import { interviewSlotOpenApi } from "./interviewSlot.openapi";
+import { requireRole } from "../auth/auth.guard";
 
 export const interviewSlotAdminRoute = new Elysia({ prefix: "/interview-slot" })
   .use(auditPlugin)
   .decorate("interviewSlotController", interviewSlotController)
-  .get(
-    "/",
-    async ({ interviewSlotController, }) => {
-      return await interviewSlotController.getAllSlot(true);
-    },
-    { detail: interviewSlotOpenApi.getAllSlots },
-  )
+  .use(requireRole("Admin"))
   .post(
     "/",
     async ({ interviewSlotController, body, meta }) => {

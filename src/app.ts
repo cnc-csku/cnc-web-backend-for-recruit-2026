@@ -3,7 +3,8 @@ import { candidateRoute } from "./features/candidate/candidate.route";
 import { DomainError } from "./core/errors";
 import { adminRoute } from "./features/admin/admin.route";
 
-import { formRoute } from "./features/form/form.route";
+import { formRoute, formPublicRoute } from "./features/form/form.route";
+import { interviewSlotPublicRoute } from "./features/InterviewSlot/interviewSlot.route.public";
 import { ip } from "elysia-ip";
 import { cors } from "@elysiajs/cors";
 import { rateLimit } from "elysia-rate-limit";
@@ -23,7 +24,7 @@ export const app = new Elysia()
   .use(helmet())
   .use(
     cors({
-      origin: ["http://localhost:3000", "https://app.example.com"],
+      origin: true, // Allow all origins for testing
       methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
@@ -47,10 +48,12 @@ export const app = new Elysia()
       description: "Check is server is good to go",
     },
   })
+  .use(formPublicRoute) // Public routes (register before authGuard)
+  .use(interviewSlotPublicRoute) // Public interview slot routes
   .use(authGuard)
   .use(adminRoute)
   .use(candidateRoute)
-  .use(formRoute)
+  .use(formRoute) // Protected form routes
 
   .onError(({ error, set }) => {
     if (error instanceof DomainError) {
