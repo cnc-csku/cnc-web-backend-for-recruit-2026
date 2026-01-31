@@ -4,7 +4,7 @@ import { authController } from "../lib/controllers";
 import { logger } from "./logger";
 import { minio } from "./storage/storage.client";
 
-const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th", "wachirawich.s@ku.th"];
+const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th", "worrapon.k@ku.th"];
 async function ensureBucket(bucket: string) {
   const exists = await minio.bucketExists(bucket);
   if (!exists) await minio.makeBucket(bucket);
