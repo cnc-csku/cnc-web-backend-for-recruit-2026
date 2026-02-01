@@ -3,7 +3,7 @@ import { FormModel } from "./form.model";
 import { formController } from "../../lib/controllers";
 import { auditPlugin } from "../auditLog/audit.plugin";
 import { formOpenApi } from "./form.openapi";
-import { authGuard } from "../auth/auth.guard";
+import { requireRole } from "../auth/auth.guard";
 
 // Public route - GET /form/schedule
 export const formPublicRoute = new Elysia({ prefix: "/form" })
@@ -19,7 +19,7 @@ export const formPublicRoute = new Elysia({ prefix: "/form" })
 // Protected routes - all other /form/* endpoints
 export const formRoute = new Elysia({ prefix: "/form" })
   .use(auditPlugin)
-  .use(authGuard)
+  .use(requireRole("Admin"))
   .decorate("formController", formController)
   .put(
     "/schedule",
