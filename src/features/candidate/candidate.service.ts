@@ -29,7 +29,7 @@ import { InterviewSlotController } from "../InterviewSlot/interviewSlot.controll
 import { pickSafe } from "../../utils/pickSafe";
 import { CandidateFileHandler } from "./candidate.file";
 
-const MAX_EDIT_ALLOW = 99999;
+const MAX_EDIT_ALLOW = 3;
 
 export class CandidateService {
   constructor(
@@ -40,7 +40,8 @@ export class CandidateService {
   ) {}
 
   async getAlls(): Promise<
-    Partial<Candidate> & { profileImageUrl: string | null; transcriptUrl?: string }[]
+    Partial<Candidate> &
+      { profileImageUrl: string | null; transcriptUrl?: string }[]
   > {
     const candidates = await candidatesCol.find({}).toArray();
 
