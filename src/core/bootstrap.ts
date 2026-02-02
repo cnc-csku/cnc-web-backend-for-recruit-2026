@@ -10,15 +10,11 @@ import { config } from "./config";
 import { logger } from "./logger";
 import { s3Client } from "./storage/storage.client";
 
-<<<<<<< HEAD
 const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th", "worrapon.k@ku.th", "wachirawich.s@ku.th", "athiruj.k@ku.th"];
 async function ensureBucket(bucket: string) {
   const exists = await minio.bucketExists(bucket);
   if (!exists) await minio.makeBucket(bucket);
 }
-=======
-const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th", "worrapon.k@ku.th"];
->>>>>>> f8ec00f6e0075edafe63b1f491de86f44443541d
 
 async function ensureStorage() {
   const bucket = config.s3.bucket!;
