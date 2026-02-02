@@ -1,14 +1,12 @@
-import { Client } from "minio";
+import { S3Client } from "@aws-sdk/client-s3";
 import { config } from "../config";
 
-const endpointUrl = new URL(config.s3.endpoint!);
-
-export const minio = new Client({
-  endPoint: endpointUrl.hostname,
-  port: Number(endpointUrl.port),
-  region: "us-east-1",
-  accessKey: config.s3.accessKey!!,
-  secretKey: config.s3.secretKey!!,
-  useSSL: false,
-  pathStyle: true,
+export const s3Client = new S3Client({
+  endpoint: config.s3.endpoint,
+  region: "us-east-1", // Region is often required but can be dummy for MinIO/compatible
+  credentials: {
+    accessKeyId: config.s3.accessKey!,
+    secretAccessKey: config.s3.secretKey!,
+  },
+  forcePathStyle: true,
 });

@@ -11,6 +11,7 @@ const REQUIRED_KEY = {
   S3_ENDPOINT: process.env.S3_ENDPOINT,
   S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
   S3_SECRET_KEY: process.env.S3_SECRET_KEY,
+  S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
 };
 
 for (const [key, value] of Object.entries(REQUIRED_KEY)) {
@@ -33,6 +34,8 @@ export const config = {
     endpoint: process.env.S3_ENDPOINT,
     accessKey: process.env.S3_ACCESS_KEY,
     secretKey: process.env.S3_SECRET_KEY,
+    bucket: process.env.S3_BUCKET_NAME,
+    useSSL: process.env.S3_USE_SSL === "true",
   },
   env: NODE_ENV,
   isDev: NODE_ENV === "development",

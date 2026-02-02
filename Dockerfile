@@ -11,4 +11,4 @@ COPY tsconfig.json ./
 COPY src ./src
 COPY shared ./shared
 
-CMD ["bun", "dev"]
+CMD ["bun", "start"]

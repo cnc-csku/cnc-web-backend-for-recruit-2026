@@ -1,30 +1,58 @@
+import {
+  CreateBucketCommand,
+  HeadBucketCommand,
+  PutBucketPolicyCommand,
+} from "@aws-sdk/client-s3";
 import { AuditMeta } from "../features/auditLog/audit.model";
 import { formCol } from "../features/form/form.model";
 import { authController } from "../lib/controllers";
+import { config } from "./config";
 import { logger } from "./logger";
-import { minio } from "./storage/storage.client";
+import { s3Client } from "./storage/storage.client";
 
+<<<<<<< HEAD
 const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th", "worrapon.k@ku.th", "wachirawich.s@ku.th", "athiruj.k@ku.th"];
 async function ensureBucket(bucket: string) {
   const exists = await minio.bucketExists(bucket);
   if (!exists) await minio.makeBucket(bucket);
 }
+=======
+const ADMIN_DEFUALT_EMAIL = ["thanut.tha@ku.th", "worrapon.k@ku.th"];
+>>>>>>> f8ec00f6e0075edafe63b1f491de86f44443541d
 
-async function ensurePublicBucket(bucket: string) {
-  await ensureBucket(bucket);
+async function ensureStorage() {
+  const bucket = config.s3.bucket!;
+  try {
+    await s3Client.send(new HeadBucketCommand({ Bucket: bucket }));
+  } catch (error) {
+    logger.info(`Bucket ${bucket} not found, creating...`);
+    await s3Client.send(new CreateBucketCommand({ Bucket: bucket }));
+  }
 
+  // Set public policy for profile images only
   const publicReadPolicy = {
     Version: "2012-10-17",
     Statement: [
       {
         Effect: "Allow",
-        Principal: { AWS: ["*"] },
-        Action: ["s3:GetObject"],
-        Resource: [`arn:aws:s3:::${bucket}/*`],
+        Principal: "*",
+        Action: "s3:GetObject",
+        Resource: `arn:aws:s3:::${bucket}/cnc-profile/*`,
       },
     ],
   };
-  await minio.setBucketPolicy(bucket, JSON.stringify(publicReadPolicy));
+
+  try {
+    await s3Client.send(
+      new PutBucketPolicyCommand({
+        Bucket: bucket,
+        Policy: JSON.stringify(publicReadPolicy),
+      }),
+    );
+  } catch (error) {
+    logger.error(`Failed to set bucket policy: ${error}`);
+    // Non-fatal, usually because user doesn't have PutBucketPolicy permission
+  }
 }
 
 async function ensureAdminUser() {
@@ -73,6 +101,5 @@ export async function bootstrap() {
   );
 
   await ensureAdminUser();
-  await ensureBucket("cnc-transcript");
-  await ensurePublicBucket("cnc-profile");
+  await ensureStorage();
 }
