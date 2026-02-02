@@ -35,6 +35,7 @@ export const config = {
     accessKey: process.env.S3_ACCESS_KEY,
     secretKey: process.env.S3_SECRET_KEY,
     bucket: process.env.S3_BUCKET_NAME,
+    useSSL: process.env.S3_USE_SSL === "true",
   },
   env: NODE_ENV,
   isDev: NODE_ENV === "development",
