@@ -106,4 +106,32 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
       }),
       detail: candidateOpenApi.updateInterviewStatus,
     },
+  )
+  .get(
+    "/single",
+    async ({ query, candidateController }) => {
+      const { candidateId, candidateEmail } = query;
+
+      if (candidateEmail) {
+        return await candidateController.getCandidateByEmail(
+          candidateEmail,
+          true,
+        );
+      }
+
+      if (candidateId) {
+        return await candidateController.getCandidate(candidateId);
+      }
+
+      throw new Error(
+        "Either candidateId or candidateEmail query parameter must be provided",
+      );
+    },
+    {
+      query: t.Object({
+        candidateId: t.Optional(t.String()),
+        candidateEmail: t.Optional(t.String()),
+      }),
+      detail: candidateOpenApi.adminGetCandidate,
+    },
   );

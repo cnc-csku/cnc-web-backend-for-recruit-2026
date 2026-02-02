@@ -40,38 +40,27 @@ export class CandidateService {
   ) {}
 
   async getAlls(): Promise<
-    Partial<Candidate> & { profileImageUrl: string | null }[]
+    Partial<Candidate> & { profileImageUrl: string | null; transcriptUrl?: string }[]
   > {
-    const candidates = await candidatesCol
-      .find(
-        {},
-        {
-          projection: {
-            _id: 1,
-            email: 1,
-            firstName: 1,
-            lastName: 1,
-            nickName: 1,
-            editCount: 1,
-            phoneNumber: 1,
-            applicationStatus: 1,
-            interviewStatus: 1,
-            currentInterviewRoom: 1,
-            profileImageKey: 1,
-          },
-        },
-      )
-      .toArray();
+    const candidates = await candidatesCol.find({}).toArray();
 
-    const results = candidates.map((c) => {
-      const { profileImageKey, ...rest } = c;
-      return {
-        ...rest,
-        profileImageUrl: profileImageKey
-          ? this.candidateFileHandler.getUrl(profileImageKey)
-          : null,
-      };
-    });
+    const results = await Promise.all(
+      candidates.map(async (c) => {
+        const profileImageUrl = c.profileImageKey
+          ? this.candidateFileHandler.getUrl(c.profileImageKey)
+          : null;
+
+        const transcriptUrl = c.transcriptKey
+          ? await this.candidateFileHandler.getPresignedUrl(c.transcriptKey)
+          : null;
+
+        return {
+          ...c,
+          profileImageUrl,
+          transcriptUrl,
+        };
+      }),
+    );
     return results;
   }
 
