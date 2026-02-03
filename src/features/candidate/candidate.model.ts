@@ -59,7 +59,10 @@ const CreateCandidateBodySchema = t.Object(
     socialContact: t.String(),
     github: t.String(),
     interviewSlotId: t.Optional(t.String()),
-    referralSource: ReferralSource,
+    referralSource: t.Union([
+      ReferralSource,
+      t.Array(ReferralSource),
+    ]),
     projectExperience: t.String(),
     clubs: t.String(),
     interests: t.String(),
@@ -111,7 +114,10 @@ export const CandidateModel = {
     interviewSlotId: t.Optional(t.String()),
 
     //questions answer
-    referralSource: ReferralSource,
+    referralSource: t.Union([
+      ReferralSource,
+      t.Array(ReferralSource),
+    ]),
     projectExperience: t.String(),
     clubs: t.String(),
     interests: t.String(),
