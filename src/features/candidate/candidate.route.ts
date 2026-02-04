@@ -48,6 +48,8 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
       if (!candidate) {
         throw new CandidateNotFoundError();
       }
+
+      // Remove sensitive storage keys but keep the URLs
       const { transcriptKey, profileImageKey, ...data } = candidate;
       return data;
     },
