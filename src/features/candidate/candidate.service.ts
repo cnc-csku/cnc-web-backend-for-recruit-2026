@@ -29,7 +29,7 @@ import { InterviewSlotController } from "../InterviewSlot/interviewSlot.controll
 import { pickSafe } from "../../utils/pickSafe";
 import { CandidateFileHandler } from "./candidate.file";
 
-const MAX_EDIT_ALLOW = 3;
+const MAX_EDIT_ALLOW = 49;
 
 export class CandidateService {
   constructor(
