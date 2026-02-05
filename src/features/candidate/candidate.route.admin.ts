@@ -32,7 +32,7 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
       );
     },
     {
-      body: CandidateModel.createCandidateBody,
+      body: CandidateModel.updateCandidateBody,
       detail: candidateOpenApi.adminUpdateCandidate,
     },
   )
