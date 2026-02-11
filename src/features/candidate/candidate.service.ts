@@ -372,7 +372,6 @@ export class CandidateService {
   }
 
   async unAssignInterviewSlot(candidateId: string, session?: ClientSession) {
-    await this.formController.assertEditAllowed();
     const candidateIdObj = new ObjectId(candidateId);
 
     const result = await candidatesCol.updateOne(
