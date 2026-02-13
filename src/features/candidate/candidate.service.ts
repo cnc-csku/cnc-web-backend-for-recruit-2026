@@ -18,7 +18,11 @@ import {
   HasNoSlotError,
 } from "../../core/errors";
 import { ClientSession, ObjectId, WithId } from "mongodb";
-import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
+import {
+  AddQuestionBody,
+  AddReviewerBody,
+  UpdateVoiceBody,
+} from "../interviewQuestion/interviewQuestion.model";
 import { InterviewQuestionController } from "../interviewQuestion/interviewQuestion.controller";
 import { FormController } from "../form/form.controller";
 import { AuditLogController } from "../auditLog/audit.controller";
@@ -298,54 +302,85 @@ export class CandidateService {
   }
 
   async getInterViewQuestions(id: string) {
-    const exist = await this.findById(id);
+    const exist = await candidatesCol.findOne({ _id: new ObjectId(id) });
     if (!exist) throw new CandidateNotFoundError();
 
     return await this.interviewQuestionController.getByCandidateId(id);
   }
 
+  async initInterViewQuestions(id: string, meta: AuditMeta) {
+    const exist = await candidatesCol.findOne({ _id: new ObjectId(id) });
+    if (!exist) throw new CandidateNotFoundError();
+
+    return await this.interviewQuestionController.initForCandidate(id, meta);
+  }
+
   async addInterViewQuestion(
     id: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    data: AddQuestionBody,
     meta: AuditMeta,
   ) {
-    const exist = await this.findById(id);
+    const exist = await candidatesCol.findOne({ _id: new ObjectId(id) });
     if (!exist) throw new CandidateNotFoundError();
     if (exist.applicationStatus === "WITHDRAWN")
       throw new AlreadyWithdrawnError();
 
-    const result =
-      await this.interviewQuestionController.createInterViewQuestion(
-        id,
-        data,
-        meta,
-      );
-    return result;
+    return await this.interviewQuestionController.addQuestion(id, data, meta);
   }
 
   async updateInterViewQuestion(
     candidateId: string,
-    questionid: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    room: "attitude" | "technical",
+    questionIndex: number,
+    data: { title?: string; answer?: string; score?: number },
     meta: AuditMeta,
   ) {
-    const exist = await this.findById(candidateId);
+    const exist = await candidatesCol.findOne({
+      _id: new ObjectId(candidateId),
+    });
     if (!exist) throw new CandidateNotFoundError();
     if (exist.applicationStatus === "WITHDRAWN")
       throw new AlreadyWithdrawnError();
 
-    return await this.interviewQuestionController.updateInterViewQuestion(
-      questionid,
+    return await this.interviewQuestionController.updateQuestion(
+      candidateId,
+      room,
+      questionIndex,
       data,
       meta,
     );
   }
 
-  async deleteInterViewQuestion(questionId: string, meta: AuditMeta) {
-    return await this.interviewQuestionController.deleteQuestionById(
-      questionId,
+  async deleteInterViewQuestion(
+    candidateId: string,
+    room: "attitude" | "technical",
+    questionIndex: number,
+    meta: AuditMeta,
+  ) {
+    return await this.interviewQuestionController.deleteQuestion(
+      candidateId,
+      room,
+      questionIndex,
       meta,
     );
+  }
+
+  async addInterViewReviewer(id: string, data: AddReviewerBody, meta: AuditMeta) {
+    const exist = await candidatesCol.findOne({ _id: new ObjectId(id) });
+    if (!exist) throw new CandidateNotFoundError();
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
+
+    return await this.interviewQuestionController.addReviewer(id, data, meta);
+  }
+
+  async updateInterViewVoice(id: string, data: UpdateVoiceBody, meta: AuditMeta) {
+    const exist = await candidatesCol.findOne({ _id: new ObjectId(id) });
+    if (!exist) throw new CandidateNotFoundError();
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
+
+    return await this.interviewQuestionController.updateVoice(id, data, meta);
   }
 
   async assignInterviewSlot(

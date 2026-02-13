@@ -11,7 +11,11 @@ import {
   DuplicateCandidateError,
   EditLimitExceededError,
 } from "../../core/errors";
-import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
+import {
+  AddQuestionBody,
+  AddReviewerBody,
+  UpdateVoiceBody,
+} from "../interviewQuestion/interviewQuestion.model";
 import { AuditMeta } from "../auditLog/audit.model";
 import { ClientSession } from "mongodb";
 
@@ -30,9 +34,6 @@ export class CandidateController {
     return await this.service.getAlls();
   }
 
-  async submitCandidate(){
-    
-  }
   async updateCandidate(
     candidateId: string,
     data: Partial<UpdateCandidateBody>,
@@ -126,11 +127,18 @@ export class CandidateController {
     }
   }
 
-  async addInterViewQuestion(
-    id: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta,
-  ) {
+  async initInterViewQuestions(id: string, meta: AuditMeta) {
+    try {
+      return await this.service.initInterViewQuestions(id, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to init questions");
+    }
+  }
+
+  async addInterViewQuestion(id: string, data: AddQuestionBody, meta: AuditMeta) {
     try {
       return await this.service.addInterViewQuestion(id, data, meta);
     } catch (err) {
@@ -143,14 +151,16 @@ export class CandidateController {
 
   async updateInterViewQuestion(
     candidateId: string,
-    questionId: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    room: "attitude" | "technical",
+    questionIndex: number,
+    data: { title?: string; answer?: string; score?: number },
     meta: AuditMeta,
   ) {
     try {
       return await this.service.updateInterViewQuestion(
         candidateId,
-        questionId,
+        room,
+        questionIndex,
         data,
         meta,
       );
@@ -162,8 +172,40 @@ export class CandidateController {
     }
   }
 
-  async deleteInterviewQuestion(questionId: string, meta: AuditMeta) {
-    return await this.service.deleteInterViewQuestion(questionId, meta);
+  async deleteInterViewQuestion(
+    candidateId: string,
+    room: "attitude" | "technical",
+    questionIndex: number,
+    meta: AuditMeta,
+  ) {
+    return await this.service.deleteInterViewQuestion(
+      candidateId,
+      room,
+      questionIndex,
+      meta,
+    );
+  }
+
+  async addInterViewReviewer(id: string, data: AddReviewerBody, meta: AuditMeta) {
+    try {
+      return await this.service.addInterViewReviewer(id, data, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to add reviewer");
+    }
+  }
+
+  async updateInterViewVoice(id: string, data: UpdateVoiceBody, meta: AuditMeta) {
+    try {
+      return await this.service.updateInterViewVoice(id, data, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to update voice");
+    }
   }
 
   async assignInterviewSlot(
@@ -178,7 +220,6 @@ export class CandidateController {
     return await this.service.unAssignInterviewSlot(candidateId, session);
   }
 
-  // set status to withDraw and unbind from account
   async markWithdrawn(candidateId: string, session?: ClientSession) {
     return await this.service.markWithdrawn(candidateId);
   }

@@ -1,5 +1,9 @@
 import { AuditMeta } from "../auditLog/audit.model";
-import { CreateInterViewQuestBody } from "./interviewQuestion.model";
+import {
+  AddQuestionBody,
+  AddReviewerBody,
+  UpdateVoiceBody,
+} from "./interviewQuestion.model";
 import { InterviewQuestionService } from "./interviewQuestion.service";
 
 export class InterviewQuestionController {
@@ -9,23 +13,65 @@ export class InterviewQuestionController {
     return await this.service.getByCandidateId(candidateId);
   }
 
-  async createInterViewQuestion(
-    candidateId: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
-  ) {
-    return await this.service.createInterViewQuestion(candidateId, data, meta);
+  async initForCandidate(candidateId: string, meta: AuditMeta) {
+    return await this.service.initForCandidate(candidateId, meta);
   }
 
-  async updateInterViewQuestion(
+  async addQuestion(
     candidateId: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
-    meta: AuditMeta
+    data: AddQuestionBody,
+    meta: AuditMeta,
   ) {
-    return await this.service.updateInterViewQuestion(candidateId, data, meta);
+    return await this.service.addQuestion(candidateId, data, meta);
   }
 
-  async deleteQuestionById(questionId: string, meta: AuditMeta) {
-    return await this.service.deleteById(questionId, meta);
+  async updateQuestion(
+    candidateId: string,
+    room: "attitude" | "technical",
+    questionIndex: number,
+    data: { title?: string; answer?: string; score?: number },
+    meta: AuditMeta,
+  ) {
+    return await this.service.updateQuestion(
+      candidateId,
+      room,
+      questionIndex,
+      data,
+      meta,
+    );
+  }
+
+  async deleteQuestion(
+    candidateId: string,
+    room: "attitude" | "technical",
+    questionIndex: number,
+    meta: AuditMeta,
+  ) {
+    return await this.service.deleteQuestion(
+      candidateId,
+      room,
+      questionIndex,
+      meta,
+    );
+  }
+
+  async addReviewer(
+    candidateId: string,
+    data: AddReviewerBody,
+    meta: AuditMeta,
+  ) {
+    return await this.service.addReviewer(candidateId, data, meta);
+  }
+
+  async updateVoice(
+    candidateId: string,
+    data: UpdateVoiceBody,
+    meta: AuditMeta,
+  ) {
+    return await this.service.updateVoice(candidateId, data, meta);
+  }
+
+  async deleteByCandidateId(candidateId: string, meta: AuditMeta) {
+    return await this.service.deleteByCandidateId(candidateId, meta);
   }
 }
