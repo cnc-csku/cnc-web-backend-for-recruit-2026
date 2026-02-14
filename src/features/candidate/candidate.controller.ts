@@ -11,7 +11,12 @@ import {
   DuplicateCandidateError,
   EditLimitExceededError,
 } from "../../core/errors";
-import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
+import {
+  AddQuestionBody,
+  UpdateQuestionBody,
+  AddReviewerBody,
+  UpdateVoiceBody,
+} from "../interviewQuestion/interviewQuestion.model";
 import { AuditMeta } from "../auditLog/audit.model";
 import { ClientSession } from "mongodb";
 
@@ -30,9 +35,8 @@ export class CandidateController {
     return await this.service.getAlls();
   }
 
-  async submitCandidate(){
-    
-  }
+  async submitCandidate() {}
+
   async updateCandidate(
     candidateId: string,
     data: Partial<UpdateCandidateBody>,
@@ -115,6 +119,10 @@ export class CandidateController {
     return await this.service.deleteById(id, meta);
   }
 
+  // ─────────────────────────────────────
+  // Interview Questions
+  // ─────────────────────────────────────
+
   async getInterViewQuestions(id: string) {
     try {
       return await this.service.getInterViewQuestions(id);
@@ -122,13 +130,24 @@ export class CandidateController {
       if (err instanceof DomainError) {
         throw err;
       }
-      throw new Error("Failed to get question");
+      throw new Error("Failed to get questions");
+    }
+  }
+
+  async initInterViewQuestions(id: string, meta: AuditMeta) {
+    try {
+      return await this.service.initInterViewQuestions(id, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to init interview document");
     }
   }
 
   async addInterViewQuestion(
     id: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    data: AddQuestionBody,
     meta: AuditMeta,
   ) {
     try {
@@ -143,14 +162,16 @@ export class CandidateController {
 
   async updateInterViewQuestion(
     candidateId: string,
-    questionId: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    room: "technical" | "attitude",
+    index: number,
+    data: UpdateQuestionBody,
     meta: AuditMeta,
   ) {
     try {
       return await this.service.updateInterViewQuestion(
         candidateId,
-        questionId,
+        room,
+        index,
         data,
         meta,
       );
@@ -162,9 +183,68 @@ export class CandidateController {
     }
   }
 
-  async deleteInterviewQuestion(questionId: string, meta: AuditMeta) {
-    return await this.service.deleteInterViewQuestion(questionId, meta);
+  async deleteInterViewQuestion(
+    candidateId: string,
+    room: "technical" | "attitude",
+    index: number,
+    meta: AuditMeta,
+  ) {
+    try {
+      return await this.service.deleteInterViewQuestion(
+        candidateId,
+        room,
+        index,
+        meta,
+      );
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to delete question");
+    }
   }
+
+  // ─────────────────────────────────────
+  // Reviewers
+  // ─────────────────────────────────────
+
+  async addInterViewReviewer(
+    id: string,
+    data: AddReviewerBody,
+    meta: AuditMeta,
+  ) {
+    try {
+      return await this.service.addInterViewReviewer(id, data, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to add reviewer");
+    }
+  }
+
+  // ─────────────────────────────────────
+  // Audios / Voice
+  // ─────────────────────────────────────
+
+  async updateInterViewVoice(
+    id: string,
+    data: UpdateVoiceBody,
+    meta: AuditMeta,
+  ) {
+    try {
+      return await this.service.updateInterViewVoice(id, data, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to update voice");
+    }
+  }
+
+  // ─────────────────────────────────────
+  // Interview Slot
+  // ─────────────────────────────────────
 
   async assignInterviewSlot(
     candidateId: string,

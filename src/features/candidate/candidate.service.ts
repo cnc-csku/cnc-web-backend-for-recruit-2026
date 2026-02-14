@@ -18,7 +18,12 @@ import {
   HasNoSlotError,
 } from "../../core/errors";
 import { ClientSession, ObjectId, WithId } from "mongodb";
-import { CreateInterViewQuestBody } from "../interviewQuestion/interviewQuestion.model";
+import {
+  AddQuestionBody,
+  UpdateQuestionBody,
+  AddReviewerBody,
+  UpdateVoiceBody,
+} from "../interviewQuestion/interviewQuestion.model";
 import { InterviewQuestionController } from "../interviewQuestion/interviewQuestion.controller";
 import { FormController } from "../form/form.controller";
 import { AuditLogController } from "../auditLog/audit.controller";
@@ -297,6 +302,10 @@ export class CandidateService {
     return result;
   }
 
+  // ─────────────────────────────────────
+  // Interview Questions (delegated)
+  // ─────────────────────────────────────
+
   async getInterViewQuestions(id: string) {
     const exist = await this.findById(id);
     if (!exist) throw new CandidateNotFoundError();
@@ -304,9 +313,19 @@ export class CandidateService {
     return await this.interviewQuestionController.getByCandidateId(id);
   }
 
+  async initInterViewQuestions(id: string, meta: AuditMeta) {
+    const exist = await this.findById(id);
+    if (!exist) throw new CandidateNotFoundError();
+
+    return await this.interviewQuestionController.initInterviewDocument(
+      id,
+      meta,
+    );
+  }
+
   async addInterViewQuestion(
     id: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    data: AddQuestionBody,
     meta: AuditMeta,
   ) {
     const exist = await this.findById(id);
@@ -314,19 +333,14 @@ export class CandidateService {
     if (exist.applicationStatus === "WITHDRAWN")
       throw new AlreadyWithdrawnError();
 
-    const result =
-      await this.interviewQuestionController.createInterViewQuestion(
-        id,
-        data,
-        meta,
-      );
-    return result;
+    return await this.interviewQuestionController.addQuestion(id, data, meta);
   }
 
   async updateInterViewQuestion(
     candidateId: string,
-    questionid: string,
-    data: Omit<CreateInterViewQuestBody, "candidateId">,
+    room: "technical" | "attitude",
+    index: number,
+    data: UpdateQuestionBody,
     meta: AuditMeta,
   ) {
     const exist = await this.findById(candidateId);
@@ -334,19 +348,62 @@ export class CandidateService {
     if (exist.applicationStatus === "WITHDRAWN")
       throw new AlreadyWithdrawnError();
 
-    return await this.interviewQuestionController.updateInterViewQuestion(
-      questionid,
+    return await this.interviewQuestionController.updateQuestion(
+      candidateId,
+      room,
+      index,
       data,
       meta,
     );
   }
 
-  async deleteInterViewQuestion(questionId: string, meta: AuditMeta) {
-    return await this.interviewQuestionController.deleteQuestionById(
-      questionId,
+  async deleteInterViewQuestion(
+    candidateId: string,
+    room: "technical" | "attitude",
+    index: number,
+    meta: AuditMeta,
+  ) {
+    return await this.interviewQuestionController.deleteQuestion(
+      candidateId,
+      room,
+      index,
       meta,
     );
   }
+
+  // ─────────────────────────────────────
+  // Reviewers (delegated)
+  // ─────────────────────────────────────
+
+  async addInterViewReviewer(
+    id: string,
+    data: AddReviewerBody,
+    meta: AuditMeta,
+  ) {
+    const exist = await this.findById(id);
+    if (!exist) throw new CandidateNotFoundError();
+
+    return await this.interviewQuestionController.addReviewer(id, data, meta);
+  }
+
+  // ─────────────────────────────────────
+  // Audios / Voice (delegated)
+  // ─────────────────────────────────────
+
+  async updateInterViewVoice(
+    id: string,
+    data: UpdateVoiceBody,
+    meta: AuditMeta,
+  ) {
+    const exist = await this.findById(id);
+    if (!exist) throw new CandidateNotFoundError();
+
+    return await this.interviewQuestionController.updateVoice(id, data, meta);
+  }
+
+  // ─────────────────────────────────────
+  // Interview Slot
+  // ─────────────────────────────────────
 
   async assignInterviewSlot(
     candidateId: string,
