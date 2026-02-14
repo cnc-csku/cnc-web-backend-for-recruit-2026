@@ -20,10 +20,7 @@ import {
 import { ClientSession, ObjectId, WithId } from "mongodb";
 import {
   AddQuestionBody,
-<<<<<<< HEAD
-=======
   UpdateQuestionBody,
->>>>>>> release/v1.3
   AddReviewerBody,
   UpdateVoiceBody,
 } from "../interviewQuestion/interviewQuestion.model";
@@ -317,12 +314,6 @@ export class CandidateService {
   }
 
   async initInterViewQuestions(id: string, meta: AuditMeta) {
-<<<<<<< HEAD
-    const exist = await candidatesCol.findOne({ _id: new ObjectId(id) });
-    if (!exist) throw new CandidateNotFoundError();
-
-    return await this.interviewQuestionController.initForCandidate(id, meta);
-=======
     const exist = await this.findById(id);
     if (!exist) throw new CandidateNotFoundError();
 
@@ -330,7 +321,6 @@ export class CandidateService {
       id,
       meta,
     );
->>>>>>> release/v1.3
   }
 
   async addInterViewQuestion(
@@ -348,15 +338,9 @@ export class CandidateService {
 
   async updateInterViewQuestion(
     candidateId: string,
-<<<<<<< HEAD
-    room: "attitude" | "technical",
-    questionIndex: number,
-    data: { title?: string; answer?: string; score?: number },
-=======
     room: "technical" | "attitude",
     index: number,
     data: UpdateQuestionBody,
->>>>>>> release/v1.3
     meta: AuditMeta,
   ) {
     const exist = await candidatesCol.findOne({
@@ -369,11 +353,7 @@ export class CandidateService {
     return await this.interviewQuestionController.updateQuestion(
       candidateId,
       room,
-<<<<<<< HEAD
-      questionIndex,
-=======
       index,
->>>>>>> release/v1.3
       data,
       meta,
     );
@@ -381,34 +361,18 @@ export class CandidateService {
 
   async deleteInterViewQuestion(
     candidateId: string,
-<<<<<<< HEAD
-    room: "attitude" | "technical",
-    questionIndex: number,
-=======
     room: "technical" | "attitude",
     index: number,
->>>>>>> release/v1.3
     meta: AuditMeta,
   ) {
     return await this.interviewQuestionController.deleteQuestion(
       candidateId,
       room,
-<<<<<<< HEAD
-      questionIndex,
-=======
       index,
->>>>>>> release/v1.3
       meta,
     );
   }
 
-<<<<<<< HEAD
-  async addInterViewReviewer(id: string, data: AddReviewerBody, meta: AuditMeta) {
-    const exist = await candidatesCol.findOne({ _id: new ObjectId(id) });
-    if (!exist) throw new CandidateNotFoundError();
-    if (exist.applicationStatus === "WITHDRAWN")
-      throw new AlreadyWithdrawnError();
-=======
   // ─────────────────────────────────────
   // Reviewers (delegated)
   // ─────────────────────────────────────
@@ -420,18 +384,10 @@ export class CandidateService {
   ) {
     const exist = await this.findById(id);
     if (!exist) throw new CandidateNotFoundError();
->>>>>>> release/v1.3
 
     return await this.interviewQuestionController.addReviewer(id, data, meta);
   }
 
-<<<<<<< HEAD
-  async updateInterViewVoice(id: string, data: UpdateVoiceBody, meta: AuditMeta) {
-    const exist = await candidatesCol.findOne({ _id: new ObjectId(id) });
-    if (!exist) throw new CandidateNotFoundError();
-    if (exist.applicationStatus === "WITHDRAWN")
-      throw new AlreadyWithdrawnError();
-=======
   // ─────────────────────────────────────
   // Audios / Voice (delegated)
   // ─────────────────────────────────────
@@ -443,18 +399,14 @@ export class CandidateService {
   ) {
     const exist = await this.findById(id);
     if (!exist) throw new CandidateNotFoundError();
->>>>>>> release/v1.3
 
     return await this.interviewQuestionController.updateVoice(id, data, meta);
   }
 
-<<<<<<< HEAD
-=======
   // ─────────────────────────────────────
   // Interview Slot
   // ─────────────────────────────────────
 
->>>>>>> release/v1.3
   async assignInterviewSlot(
     candidateId: string,
     slotId: string,
