@@ -90,24 +90,50 @@ export const candidateOpenApi: Record<string, OpenApiDetail> = {
     tags: ["Candidate / Interview Question"],
   },
 
+  initInterviewQuestions: {
+    operationId: "adminInitInterviewQuestions",
+    summary: "Init interview document (admin)",
+    description:
+      "Initialise an empty interview document for a candidate. If one already exists, returns it.",
+    tags: ["Candidate / Interview Question"],
+  },
+
   addInterviewQuestion: {
     operationId: "adminAddInterviewQuestion",
     summary: "Add interview question (admin)",
-    description: "Add a new interview question to a candidate",
+    description:
+      "Add a new question to a specific room (technical / attitude)",
     tags: ["Candidate / Interview Question"],
   },
 
   updateInterviewQuestion: {
     operationId: "adminUpdateInterviewQuestion",
     summary: "Update interview question (admin)",
-    description: "Update an existing interview question for a candidate",
+    description:
+      "Update a question at a specific index within a room",
     tags: ["Candidate / Interview Question"],
   },
 
   deleteInterviewQuestion: {
     operationId: "adminDeleteInterviewQuestion",
     summary: "Delete interview question (admin)",
-    description: "Delete an interview question from a candidate",
+    description:
+      "Delete a question at a specific index within a room",
+    tags: ["Candidate / Interview Question"],
+  },
+
+  addReviewer: {
+    operationId: "adminAddReviewer",
+    summary: "Add reviewer (admin)",
+    description: "Add a reviewer to the interview document",
+    tags: ["Candidate / Interview Question"],
+  },
+
+  updateVoice: {
+    operationId: "adminUpdateVoice",
+    summary: "Update voice recordings (admin)",
+    description:
+      "Update audio file references for technical / attitude rooms",
     tags: ["Candidate / Interview Question"],
   },
 

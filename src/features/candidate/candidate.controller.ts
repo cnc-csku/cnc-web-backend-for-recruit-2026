@@ -13,6 +13,10 @@ import {
 } from "../../core/errors";
 import {
   AddQuestionBody,
+<<<<<<< HEAD
+=======
+  UpdateQuestionBody,
+>>>>>>> release/v1.3
   AddReviewerBody,
   UpdateVoiceBody,
 } from "../interviewQuestion/interviewQuestion.model";
@@ -34,6 +38,11 @@ export class CandidateController {
     return await this.service.getAlls();
   }
 
+<<<<<<< HEAD
+=======
+  async submitCandidate() {}
+
+>>>>>>> release/v1.3
   async updateCandidate(
     candidateId: string,
     data: Partial<UpdateCandidateBody>,
@@ -116,6 +125,10 @@ export class CandidateController {
     return await this.service.deleteById(id, meta);
   }
 
+  // ─────────────────────────────────────
+  // Interview Questions
+  // ─────────────────────────────────────
+
   async getInterViewQuestions(id: string) {
     try {
       return await this.service.getInterViewQuestions(id);
@@ -123,10 +136,22 @@ export class CandidateController {
       if (err instanceof DomainError) {
         throw err;
       }
-      throw new Error("Failed to get question");
+      throw new Error("Failed to get questions");
     }
   }
 
+  async initInterViewQuestions(id: string, meta: AuditMeta) {
+    try {
+      return await this.service.initInterViewQuestions(id, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to init interview document");
+    }
+  }
+
+<<<<<<< HEAD
   async initInterViewQuestions(id: string, meta: AuditMeta) {
     try {
       return await this.service.initInterViewQuestions(id, meta);
@@ -139,6 +164,13 @@ export class CandidateController {
   }
 
   async addInterViewQuestion(id: string, data: AddQuestionBody, meta: AuditMeta) {
+=======
+  async addInterViewQuestion(
+    id: string,
+    data: AddQuestionBody,
+    meta: AuditMeta,
+  ) {
+>>>>>>> release/v1.3
     try {
       return await this.service.addInterViewQuestion(id, data, meta);
     } catch (err) {
@@ -151,16 +183,26 @@ export class CandidateController {
 
   async updateInterViewQuestion(
     candidateId: string,
+<<<<<<< HEAD
     room: "attitude" | "technical",
     questionIndex: number,
     data: { title?: string; answer?: string; score?: number },
+=======
+    room: "technical" | "attitude",
+    index: number,
+    data: UpdateQuestionBody,
+>>>>>>> release/v1.3
     meta: AuditMeta,
   ) {
     try {
       return await this.service.updateInterViewQuestion(
         candidateId,
         room,
+<<<<<<< HEAD
         questionIndex,
+=======
+        index,
+>>>>>>> release/v1.3
         data,
         meta,
       );
@@ -174,6 +216,7 @@ export class CandidateController {
 
   async deleteInterViewQuestion(
     candidateId: string,
+<<<<<<< HEAD
     room: "attitude" | "technical",
     questionIndex: number,
     meta: AuditMeta,
@@ -189,10 +232,24 @@ export class CandidateController {
   async addInterViewReviewer(id: string, data: AddReviewerBody, meta: AuditMeta) {
     try {
       return await this.service.addInterViewReviewer(id, data, meta);
+=======
+    room: "technical" | "attitude",
+    index: number,
+    meta: AuditMeta,
+  ) {
+    try {
+      return await this.service.deleteInterViewQuestion(
+        candidateId,
+        room,
+        index,
+        meta,
+      );
+>>>>>>> release/v1.3
     } catch (err) {
       if (err instanceof DomainError) {
         throw err;
       }
+<<<<<<< HEAD
       throw new Error("Failed to add reviewer");
     }
   }
@@ -205,8 +262,53 @@ export class CandidateController {
         throw err;
       }
       throw new Error("Failed to update voice");
+=======
+      throw new Error("Failed to delete question");
+>>>>>>> release/v1.3
     }
   }
+
+  // ─────────────────────────────────────
+  // Reviewers
+  // ─────────────────────────────────────
+
+  async addInterViewReviewer(
+    id: string,
+    data: AddReviewerBody,
+    meta: AuditMeta,
+  ) {
+    try {
+      return await this.service.addInterViewReviewer(id, data, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to add reviewer");
+    }
+  }
+
+  // ─────────────────────────────────────
+  // Audios / Voice
+  // ─────────────────────────────────────
+
+  async updateInterViewVoice(
+    id: string,
+    data: UpdateVoiceBody,
+    meta: AuditMeta,
+  ) {
+    try {
+      return await this.service.updateInterViewVoice(id, data, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to update voice");
+    }
+  }
+
+  // ─────────────────────────────────────
+  // Interview Slot
+  // ─────────────────────────────────────
 
   async assignInterviewSlot(
     candidateId: string,
