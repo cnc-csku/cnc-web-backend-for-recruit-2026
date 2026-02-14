@@ -53,7 +53,11 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
       );
     },
     {
+<<<<<<< HEAD
+      detail: candidateOpenApi.addInterviewQuestion,
+=======
       detail: candidateOpenApi.initInterviewQuestions,
+>>>>>>> release/v1.3
     },
   )
   .post(
@@ -133,7 +137,11 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
     },
     {
       body: InterviewQuestionModel.addReviewerBody,
+<<<<<<< HEAD
+      detail: candidateOpenApi.addInterviewQuestion,
+=======
       detail: candidateOpenApi.addReviewer,
+>>>>>>> release/v1.3
     },
   )
   .patch(
@@ -148,7 +156,11 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
     },
     {
       body: InterviewQuestionModel.updateVoiceBody,
+<<<<<<< HEAD
+      detail: candidateOpenApi.updateInterviewQuestion,
+=======
       detail: candidateOpenApi.updateVoice,
+>>>>>>> release/v1.3
     },
   )
   .patch(
