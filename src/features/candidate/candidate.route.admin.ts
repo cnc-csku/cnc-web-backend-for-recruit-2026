@@ -1,7 +1,7 @@
 import { Elysia, t } from "elysia";
 import { CandidateModel, InterviewStatus } from "./candidate.model";
 import { InterviewQuestionModel } from "../interviewQuestion/interviewQuestion.model";
-import { candidateController } from "../../lib/controllers";
+import { candidateController, interviewSlotController } from "../../lib/controllers";
 import { auditPlugin } from "../auditLog/audit.plugin";
 import { candidateOpenApi } from "./candidate.openapi";
 
@@ -193,5 +193,23 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
         candidateEmail: t.Optional(t.String()),
       }),
       detail: candidateOpenApi.adminGetCandidate,
+    },
+  )
+  .post(
+    "/:id/unassign-slot",
+    async ({ params, body, interviewSlotController, meta }) => {
+      const candidateId = params.id;
+      const { slotId } = body as { slotId: string };
+      return await interviewSlotController.unAssignCandidateFromSlot(
+        candidateId,
+        slotId,
+        meta,
+      );
+    },
+    {
+      body: t.Object({
+        slotId: t.String({ minLength: 24, maxLength: 24 }),
+      }),
+      detail: candidateOpenApi.unassignInterviewSlot,
     },
   );
