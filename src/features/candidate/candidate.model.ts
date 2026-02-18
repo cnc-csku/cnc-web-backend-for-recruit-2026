@@ -32,6 +32,7 @@ export const InterviewStatus = t.Union([
   t.Literal("PENDING"),
   t.Literal("SHORTLISTED"),
   t.Literal("INTERVIEWING"),
+  t.Literal("INTERVIEWED"),
   t.Literal("PASSED"),
   t.Literal("FAILED"),
 ]);
@@ -126,7 +127,7 @@ export const CandidateModel = {
     expected: t.String(),
     tools: t.String(),
 
-    currentInterviewRoom: t.Nullable(InterviewRoom),
+    currentInterviewRoom: t.Nullable(t.Array(InterviewRoom)),
     applicationStatus: ApplicationStatus,
     interviewStatus: InterviewStatus,
     editCount: t.Number(),

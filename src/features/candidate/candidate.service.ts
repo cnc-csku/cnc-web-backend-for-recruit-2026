@@ -16,6 +16,7 @@ import {
   DuplicateCandidateError,
   EditLimitExceededError,
   HasNoSlotError,
+  NoInterviewRoomError,
 } from "../../core/errors";
 import { ClientSession, ObjectId, WithId } from "mongodb";
 import {
@@ -211,6 +212,133 @@ export class CandidateService {
       { returnDocument: "after" },
     );
     if (!result) return null;
+
+    const changes = AuditUtils.calculateDiff(before, result);
+
+    this.auditController.audit({
+      ...meta,
+      action: "EDIT_CANDIDATE",
+      changes: {
+        before: changes.before,
+        after: changes.after,
+      },
+      target: {
+        type: "CANDIDATE",
+        id: candidateId,
+      },
+    });
+    return result;
+  }
+
+  async appendInterviewRoom(
+    candidateId: string,
+    room: "ATTITUDE" | "TECHNICAL",
+    meta: AuditMeta,
+  ) {
+    const exist = await this.findById(candidateId);
+    if (!exist) throw new CandidateNotFoundError();
+
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
+
+    const _id = new ObjectId(candidateId);
+
+    const before = await candidatesCol.findOne({ _id });
+
+    let result;
+    if (exist.currentInterviewRoom === null) {
+      result = await candidatesCol.findOneAndUpdate(
+        { _id },
+        {
+          $set: { currentInterviewRoom: [room], updatedAt: new Date() },
+        },
+        { returnDocument: "after" },
+      );
+    } else {
+      result = await candidatesCol.findOneAndUpdate(
+        { _id },
+        {
+          $push: { currentInterviewRoom: room },
+          $set: { updatedAt: new Date() },
+        },
+        { returnDocument: "after" },
+      );
+    }
+
+    if (!result) return null;
+
+    const changes = AuditUtils.calculateDiff(before, result);
+
+    this.auditController.audit({
+      ...meta,
+      action: "EDIT_CANDIDATE",
+      changes: {
+        before: changes.before,
+        after: changes.after,
+      },
+      target: {
+        type: "CANDIDATE",
+        id: candidateId,
+      },
+    });
+    return result;
+  }
+
+  async removeInterviewRoom(
+    candidateId: string,
+    room: "ATTITUDE" | "TECHNICAL",
+    meta: AuditMeta,
+  ) {
+    const exist = await this.findById(candidateId);
+    if (!exist) throw new CandidateNotFoundError();
+
+    if (exist.applicationStatus === "WITHDRAWN")
+      throw new AlreadyWithdrawnError();
+
+    if (exist.currentInterviewRoom === null || exist.currentInterviewRoom.length === 0) {
+      throw new NoInterviewRoomError();
+    }
+
+    const _id = new ObjectId(candidateId);
+
+    const before = await candidatesCol.findOne({ _id });
+
+    // Pull the room from the array
+    const result = await candidatesCol.findOneAndUpdate(
+      { _id },
+      {
+        $pull: { currentInterviewRoom: room },
+        $set: { updatedAt: new Date() },
+      },
+      { returnDocument: "after" },
+    );
+
+    if (!result) return null;
+
+    // If array is empty, set to null
+    if (result.currentInterviewRoom && result.currentInterviewRoom.length === 0) {
+      const finalResult = await candidatesCol.findOneAndUpdate(
+        { _id },
+        { $set: { currentInterviewRoom: null } },
+        { returnDocument: "after" },
+      );
+      if (finalResult) {
+        const changes = AuditUtils.calculateDiff(before, finalResult);
+        this.auditController.audit({
+          ...meta,
+          action: "EDIT_CANDIDATE",
+          changes: {
+            before: changes.before,
+            after: changes.after,
+          },
+          target: {
+            type: "CANDIDATE",
+            id: candidateId,
+          },
+        });
+        return finalResult;
+      }
+    }
 
     const changes = AuditUtils.calculateDiff(before, result);
 
