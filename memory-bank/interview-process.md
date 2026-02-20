@@ -43,6 +43,7 @@ graph TD
 - **PENDING**: Application submitted, awaiting admin review
 - **SHORTLISTED**: Selected for interview, awaiting scheduling
 - **INTERVIEWING**: Interview scheduled, in progress
+- **INTERVIEWED**: Interview completed, awaiting final decision
 - **PASSED**: Successfully passed interview
 - **FAILED**: Did not pass interview
 
@@ -177,13 +178,32 @@ Two types of interview rooms:
 - **TECHNICAL**: Technical skills assessment
 - **ATTITUDE**: Personality and attitude assessment
 
+`currentInterviewRoom` is stored as an array (`string[] | null`) to track all rooms the candidate has visited during the interview process.
+
+**Append Interview Room:**
 ```typescript
-// Update current interview room
-await candidateController.updateCurrentRoom(
+// Append an interview room to the candidate's currentInterviewRoom list
+await candidateController.appendInterviewRoom(
   candidateId,
   "TECHNICAL", // or "ATTITUDE"
   auditMeta
 );
+// If currentInterviewRoom was null → becomes ["TECHNICAL"]
+// If currentInterviewRoom was ["TECHNICAL"] → becomes ["TECHNICAL", "ATTITUDE"]
+```
+
+**Remove Interview Room:**
+```typescript
+// Remove an interview room from the candidate's currentInterviewRoom list
+await candidateController.removeInterviewRoom(
+  candidateId,
+  "TECHNICAL", // or "ATTITUDE"
+  auditMeta
+);
+// If currentInterviewRoom was ["TECHNICAL", "ATTITUDE"] → becomes ["ATTITUDE"]
+// If array becomes empty after removal → becomes null
+
+// Validation: Throws NoInterviewRoomError if currentInterviewRoom is null or empty
 ```
 
 #### Step 2: Question Management
@@ -475,7 +495,7 @@ Every significant action is logged:
 - `GET /admin/candidates/:id` - Get candidate details
 - `PATCH /admin/candidates/:id` - Update candidate
 - `PATCH /admin/candidates/:id/interview-status` - Update interview status
-- `PATCH /admin/candidates/:id/current-room` - Update interview room
+- `POST /admin/candidates/:id/interview-room` - Append interview room to `currentInterviewRoom` array
 
 ### Interview Slot Management
 - `GET /admin/interview-slot` - List all slots
@@ -499,6 +519,7 @@ Every significant action is logged:
 - `SLOT_CLOSED`: Slot manually closed
 - `DUPLICATE_NISIT_ID`: Nisit ID already exists
 - `CANDIDATE_WITHDRAWN`: Candidate has withdrawn
+- `NO_INTERVIEW_ROOM`: Candidate has no interview room assigned (cannot remove from null/empty currentInterviewRoom)
 
 ### Recovery Procedures
 1. **Slot conflicts**: Automatic reassignment

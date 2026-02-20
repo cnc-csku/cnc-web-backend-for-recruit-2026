@@ -192,3 +192,11 @@ export class RestrictedError extends DomainError {
     super(message);
   }
 }
+
+export class NoInterviewRoomError extends DomainError {
+  statusCode = 400;
+  code = "NO_INTERVIEW_ROOM";
+  constructor(message = "Candidate has no interview room assigned") {
+    super(message);
+  }
+}

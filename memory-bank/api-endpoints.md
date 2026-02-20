@@ -196,12 +196,20 @@ PATCH /admin/candidates/:id/interview-status
 **Request Body**: `{ "status": "PENDING"|"SHORTLISTED"|"INTERVIEWING"|"PASSED"|"FAILED" }`
 **Response**: Updated candidate
 
-#### 9. Update Current Interview Room
+#### 9. Append Interview Room
 ```
-PATCH /admin/candidates/:id/current-room
+POST /admin/candidates/:id/interview-room
 ```
-**Request Body**: `{ "room": "ATTITUDE"|"TECHNICAL"|null }`
-**Response**: Updated candidate
+**Request Body**: `{ "interviewRoom": "ATTITUDE"|"TECHNICAL" }`
+**Response**: Updated candidate with appended room in `currentInterviewRoom` array. If `currentInterviewRoom` was `null`, it is initialized as an array with the provided room.
+
+#### 10. Remove Interview Room
+```
+DELETE /admin/candidates/:id/interview-room
+```
+**Request Body**: `{ "interviewRoom": "ATTITUDE"|"TECHNICAL" }`
+**Response**: Updated candidate with the specified room removed from `currentInterviewRoom` array. If the array becomes empty after removal, it is set to `null`.
+**Error**: Returns `400 NO_INTERVIEW_ROOM` if `currentInterviewRoom` is `null` or empty.
 
 ### Form Configuration Management
 
@@ -411,6 +419,7 @@ All endpoints are rate limited to **100 requests per minute per IP address**.
 - `DUPLICATE_EMAIL`: Email already exists
 - `INVALID_FILE_TYPE`: Unsupported file type
 - `FILE_UPLOAD_FAILED`: File upload to S3 failed
+- `NO_INTERVIEW_ROOM`: Candidate has no interview room assigned (cannot remove from null/empty currentInterviewRoom)
 
 ## OpenAPI Integration
 

@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { CandidateModel, InterviewStatus } from "./candidate.model";
+import { CandidateModel, InterviewRoom, InterviewStatus } from "./candidate.model";
 import { InterviewQuestionModel } from "../interviewQuestion/interviewQuestion.model";
 import { candidateController, interviewSlotController } from "../../lib/controllers";
 import { auditPlugin } from "../auditLog/audit.plugin";
@@ -211,5 +211,37 @@ export const candidateAdminRoute = new Elysia({ prefix: "/candidates" })
         slotId: t.String({ minLength: 24, maxLength: 24 }),
       }),
       detail: candidateOpenApi.unassignInterviewSlot,
+    },
+  )
+  .post(
+    "/:id/interview-room",
+    async ({ params, body, candidateController, meta }) => {
+      return await candidateController.appendInterviewRoom(
+        params.id,
+        body.interviewRoom,
+        meta,
+      );
+    },
+    {
+      body: t.Object({
+        interviewRoom: InterviewRoom,
+      }),
+      detail: candidateOpenApi.appendInterviewRoom,
+    },
+  )
+  .delete(
+    "/:id/interview-room",
+    async ({ params, body, candidateController, meta }) => {
+      return await candidateController.removeInterviewRoom(
+        params.id,
+        body.interviewRoom,
+        meta,
+      );
+    },
+    {
+      body: t.Object({
+        interviewRoom: InterviewRoom,
+      }),
+      detail: candidateOpenApi.removeInterviewRoom,
     },
   );
