@@ -144,6 +144,22 @@ export const candidateOpenApi: Record<string, OpenApiDetail> = {
     tags: ["Candidate"],
   },
 
+  appendInterviewRoom: {
+    operationId: "adminAppendInterviewRoom",
+    summary: "Append interview room (admin)",
+    description:
+      "Append an interview room to the candidate's currentInterviewRoom list. If currentInterviewRoom is null, it will be initialized with the provided room.",
+    tags: ["Candidate"],
+  },
+
+  removeInterviewRoom: {
+    operationId: "adminRemoveInterviewRoom",
+    summary: "Remove interview room (admin)",
+    description:
+      "Remove an interview room from the candidate's currentInterviewRoom list. If the array becomes empty after removal, it will be set to null.",
+    tags: ["Candidate"],
+  },
+
   adminGetCandidate: {
     operationId: "adminGetCandidate",
     summary: "Get candidate by ID or email (admin)",

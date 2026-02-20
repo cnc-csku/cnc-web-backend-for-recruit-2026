@@ -99,6 +99,36 @@ export class CandidateController {
     }
   }
 
+  async appendInterviewRoom(
+    candidateId: string,
+    room: "ATTITUDE" | "TECHNICAL",
+    meta: AuditMeta,
+  ) {
+    try {
+      return await this.service.appendInterviewRoom(candidateId, room, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to append interview room");
+    }
+  }
+
+  async removeInterviewRoom(
+    candidateId: string,
+    room: "ATTITUDE" | "TECHNICAL",
+    meta: AuditMeta,
+  ) {
+    try {
+      return await this.service.removeInterviewRoom(candidateId, room, meta);
+    } catch (err) {
+      if (err instanceof DomainError) {
+        throw err;
+      }
+      throw new Error("Failed to remove interview room");
+    }
+  }
+
   async createCandidate(
     email: string,
     data: CreateCandidateBody,

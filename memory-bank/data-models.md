@@ -86,9 +86,9 @@ System automatically creates admin users for:
   tools: string,                    // Technical tools experience
   
   // Interview process
-  currentInterviewRoom: "ATTITUDE" | "TECHNICAL" | null,
+  currentInterviewRoom: ("ATTITUDE" | "TECHNICAL")[] | null,
   applicationStatus: "ACTIVE" | "WITHDRAWN",
-  interviewStatus: "PENDING" | "SHORTLISTED" | "INTERVIEWING" | "PASSED" | "FAILED",
+  interviewStatus: "PENDING" | "SHORTLISTED" | "INTERVIEWING" | "INTERVIEWED" | "PASSED" | "FAILED",
   
   // Metadata
   editCount: number,                // Number of edits made
