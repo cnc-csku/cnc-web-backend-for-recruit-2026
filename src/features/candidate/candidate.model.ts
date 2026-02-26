@@ -33,6 +33,7 @@ export const InterviewStatus = t.Union([
   t.Literal("SHORTLISTED"),
   t.Literal("INTERVIEWING"),
   t.Literal("INTERVIEWED"),
+  t.Literal("CONFIRMED"),
   t.Literal("PASSED"),
   t.Literal("FAILED"),
 ]);
