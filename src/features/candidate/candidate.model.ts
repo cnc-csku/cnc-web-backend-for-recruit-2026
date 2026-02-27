@@ -90,6 +90,8 @@ export const UpdateCandidateBodySchema = t.Intersect(
 );
 
 export const CandidateModel = {
+  interviewStatus: InterviewStatus,
+
   candidate: t.Object({
     email: t.String({ minLength: 1 }),
     nisitId: t.String({ minLength: 10, maxLength: 10 }),

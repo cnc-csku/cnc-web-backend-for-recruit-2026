@@ -103,6 +103,14 @@ POST /candidate/me/withdraw
 ```
 **Response**: Success confirmation
 
+### 5. Update Own Interview Status
+```
+PATCH /candidates/me/interview-status
+```
+**Request Body**: `{ "interviewStatus": "PENDING"|"SHORTLISTED"|"INTERVIEWING"|"INTERVIEWED"|"CONFIRMED"|"PASSED"|"FAILED" }`
+**Response**: Updated candidate
+**Note**: Candidates can only update their own interview status
+
 ---
 
 ## Admin Endpoints (Admin Authentication Required)
