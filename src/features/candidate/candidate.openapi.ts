@@ -167,4 +167,12 @@ export const candidateOpenApi: Record<string, OpenApiDetail> = {
       "Retrieve a single candidate profile by either candidate ID or candidate email (admin only)",
     tags: ["Candidate"],
   },
+
+  updateMyInterviewStatus: {
+    operationId: "updateMyInterviewStatus",
+    summary: "Update own interview status",
+    description:
+      "Update the interview status of the authenticated candidate (their own profile only)",
+    tags: ["Candidate"],
+  },
 };

@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { CandidateModel } from "./candidate.model";
+import { CandidateModel, InterviewStatus } from "./candidate.model";
 import {
   candidateController,
   candidateFileHandler,
@@ -280,5 +280,29 @@ export const candidateRoute = new Elysia({ prefix: "/candidates" })
     {
       body: CandidateModel.unassignSlotBody,
       detail: candidateOpenApi.unassignInterviewSlot,
+    },
+  )
+
+  // Interview Status - Update own interview status
+  .patch(
+    "/me/interview-status",
+    async ({ body, candidateController, meta, auth }) => {
+      const email = auth.user.email;
+      const candidate = await candidateController.getCandidateByEmail(
+        email,
+        false,
+      );
+      if (!candidate) throw new CandidateNotFoundError();
+      return await candidateController.updateCandidateInterviewStatus(
+        candidate._id.toString(),
+        body.interviewStatus,
+        meta,
+      );
+    },
+    {
+      body: t.Object({
+        interviewStatus: InterviewStatus,
+      }),
+      detail: candidateOpenApi.updateMyInterviewStatus,
     },
   );
